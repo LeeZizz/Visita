@@ -8,10 +8,7 @@ import com.vitazi.dto.response.AuthenticationResponse;
 import com.vitazi.dto.response.IntrospectResponse;
 import com.vitazi.services.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 
@@ -36,4 +33,9 @@ public class AuthenticationController {
                 .result(isAuthenticated)
                 .build();
     }
+    @GetMapping("/home")
+    public String home() {
+        return "Welcome to Booktour OAuth Service";
+    }
+
 }
