@@ -1,6 +1,5 @@
 package com.vitazi.dto.response;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,5 +8,6 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 public class IntrospectResponse {
-    private String valid;
+
+	private String valid;
 }

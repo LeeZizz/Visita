@@ -1,14 +1,22 @@
 package com.vitazi.entities;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-
-import java.time.LocalDate;
 
 @Entity
 @Table(name = "users")
@@ -17,35 +25,35 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "role_id", nullable = false)
-    private RoleEntity role;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long userId;
 
-    @Column(nullable = false, unique = true)
-    private String userName;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "role_id", nullable = false)
+	private RoleEntity role;
 
-    @Column(nullable = false)
-    private String passWord;
+	@Column(nullable = false, unique = true)
+	private String userName;
 
-    private String fullName;
+	@Column(nullable = false)
+	private String passWord;
 
-    @Column(nullable = false, length = 100)
-    private String email;
+	private String fullName;
 
-    @Column(unique = true, nullable = false, length = 15)
-    private String phone;
+	@Column(nullable = false, length = 100)
+	private String email;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Gender gender;
+	@Column(unique = true, nullable = false, length = 15)
+	private String phone;
 
-    private LocalDate createdAt = LocalDate.now();
-    private LocalDate updatedAt = LocalDate.now();
-    private boolean isActive;
-    private LocalDate dob;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private Gender gender;
 
+	private LocalDate createdAt = LocalDate.now();
+	private LocalDate updatedAt = LocalDate.now();
+	private boolean isActive;
+	private LocalDate dob;
 }

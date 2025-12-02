@@ -8,5 +8,6 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 public class IntrospectRequest {
-    private String token;
+
+	private String token;
 }
