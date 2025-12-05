@@ -30,7 +30,7 @@ public class UserEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "user_id")
-	private Long userId;
+	private Integer userId;
 
 	@Column(name = "full_name", nullable = false)
 	private String fullName;
@@ -61,7 +61,7 @@ public class UserEntity {
 
 	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;
- 
+
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<BookingEntity> bookings;
 

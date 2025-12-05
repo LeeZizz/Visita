@@ -30,7 +30,7 @@ public class TourEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "tour_id")
-	private Long tourId;
+	private Integer tourId;
 
 	@Column(nullable = false)
 	private String title;
@@ -64,7 +64,7 @@ public class TourEntity {
 
 	@Column
 	private Integer availability; // 1 / 0
- 
+
 	@OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<TourImageEntity> images;
 

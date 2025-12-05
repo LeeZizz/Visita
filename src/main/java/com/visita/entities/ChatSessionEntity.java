@@ -32,7 +32,7 @@ public class ChatSessionEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "session_id")
-	private Long sessionId;
+	private Integer sessionId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id", nullable = false)

@@ -51,7 +51,7 @@ public class UserController {
 	}
 
 	@GetMapping("/{id}")
-	ApiResponse<Optional<UserResponse>> getUserById(@PathVariable Long id) {
+	ApiResponse<Optional<UserResponse>> getUserById(@PathVariable Integer id) {
 		ApiResponse<Optional<UserResponse>> apiResponse = new ApiResponse<>();
 		apiResponse.setResult(userService.getUserById(id));
 		return apiResponse;
@@ -71,7 +71,7 @@ public class UserController {
 //    }
 
 	@PutMapping("/update/{id}")
-	ApiResponse<UserResponse> updateUser(@PathVariable Long id, @RequestBody UserUpdateRequest userUpdateRequest) {
+	ApiResponse<UserResponse> updateUser(@PathVariable Integer id, @RequestBody UserUpdateRequest userUpdateRequest) {
 		ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
 		apiResponse.setResult(userService.updateUser(id, userUpdateRequest));
 		return apiResponse;
@@ -81,7 +81,7 @@ public class UserController {
 //    }
 
 	@DeleteMapping("/delete/{id}")
-	ApiResponse<String> deleteUser(@PathVariable Long id) {
+	ApiResponse<String> deleteUser(@PathVariable Integer id) {
 		ApiResponse<String> apiResponse = new ApiResponse<>();
 		userService.deleteUser(id);
 		apiResponse.setResult("User đã bị xoá");

@@ -59,7 +59,7 @@ public class UserService {
 	}
 
 	@PostAuthorize("returnObject.isPresent() && returnObject.get().email == authentication.name or hasAuthority('SCOPE_ADMIN')")
-	public Optional<UserResponse> getUserById(Long userId) {
+	public Optional<UserResponse> getUserById(Integer userId) {
 		log.info("Fetching user with ID: {}", userId);
 		return userRepository.findById(userId).map(this::mapToUserResponse);
 	}
@@ -74,7 +74,7 @@ public class UserService {
 	}
 
 	@PostAuthorize("returnObject.email == authentication.name or hasAuthority('SCOPE_ADMIN')")
-	public UserResponse updateUser(Long userId, UserUpdateRequest userCreateRequest) {
+	public UserResponse updateUser(Integer userId, UserUpdateRequest userCreateRequest) {
 		UserEntity userEntity = userRepository.findById(userId)
 				.orElseThrow(() -> new WebException(ErrorCode.USER_NOT_FOUND));
 
@@ -91,7 +91,7 @@ public class UserService {
 	}
 
 	@PreAuthorize("hasAuthority('SCOPE_ADMIN')")
-	public void deleteUser(Long userId) {
+	public void deleteUser(Integer userId) {
 		UserEntity userEntity = userRepository.findById(userId)
 				.orElseThrow(() -> new WebException(ErrorCode.USER_NOT_FOUND));
 		userRepository.delete(userEntity);
