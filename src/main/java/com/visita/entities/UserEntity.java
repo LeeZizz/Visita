@@ -43,9 +43,9 @@ public class UserEntity {
 
 	@Column(length = 15)
 	private String phone;
-
-	@Enumerated(EnumType.STRING)
-	@Column(columnDefinition = "ENUM('Male','Female','Other')")
+    
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "ENUM('MALE','FEMALE','OTHER')")
 	private Gender gender;
 
 	private LocalDate dob;

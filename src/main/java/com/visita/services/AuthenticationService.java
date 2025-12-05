@@ -39,8 +39,8 @@ public class AuthenticationService {
 		this.adminRepository = adminRepository;
 	}
 
-	public IntrospectResponse introspect(IntrospectRequest introSpectRequest) throws JOSEException, ParseException {
-		var token = introSpectRequest.getToken();
+	public IntrospectResponse introspect(IntrospectRequest introspectRequest) throws JOSEException, ParseException {
+		var token = introspectRequest.getToken();
 		JWSVerifier verifier = new MACVerifier(secretKey.getBytes());
 		SignedJWT signedJWT = SignedJWT.parse(token);
 		Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
