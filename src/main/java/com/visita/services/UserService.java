@@ -1,11 +1,10 @@
 package com.visita.services;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import com.visita.dto.request.UserCreateRequest;
 import com.visita.dto.request.UserUpdateRequest;
 import com.visita.dto.response.UserResponse;
-import com.visita.entities.Gender;
 import com.visita.entities.UserEntity;
 import com.visita.exceptions.ErrorCode;
 import com.visita.exceptions.WebException;
@@ -28,46 +26,29 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class UserService {
 
-	@Autowired
-	private UserRepository userRepository;
+	private final UserRepository userRepository;
 
-	@Autowired
-	private RoleRepository roleRepository;
+	public UserService(UserRepository userRepository) {
+		this.userRepository = userRepository;
+	}
 
 	public UserEntity createUserRequest(UserCreateRequest userCreateRequest) {
-		RoleEntity userRole = roleRepository.findById(2L).orElseThrow(() -> new WebException(ErrorCode.ROLE_NOT_FOUND));
-		UserEntity userEntity = new UserEntity();
-		if (userRepository.existsByUserName(userCreateRequest.getUserName())) {
+		if (userRepository.existsByEmail(userCreateRequest.getEmail())) {
 			throw new WebException(ErrorCode.USER_EXISTED);
 		}
 		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-		userEntity.setRole(userRole);
-		userEntity.setUserName(userCreateRequest.getUserName());
+		UserEntity userEntity = new UserEntity();
 		userEntity.setFullName(userCreateRequest.getFullName());
-		userEntity.setPassWord(passwordEncoder.encode(userCreateRequest.getPassWord()));
+		userEntity.setPassword(passwordEncoder.encode(userCreateRequest.getPassword()));
 		userEntity.setPhone(userCreateRequest.getPhone());
 		userEntity.setDob(userCreateRequest.getDob());
 		userEntity.setEmail(userCreateRequest.getEmail());
-		userEntity.setGender(Gender.valueOf(userCreateRequest.getGender()));
+		userEntity.setGender(userCreateRequest.getGender());
+		userEntity.setAddress(userCreateRequest.getAddress());
+		userEntity.setIsActive(true);
+		userEntity.setCreatedAt(LocalDateTime.now());
+		userEntity.setUpdatedAt(LocalDateTime.now());
 
-//        RoleEntity userRole = roleRepository.findById(2L)
-//                .orElseThrow(() -> new RuntimeException("Role not found"));
-//
-//        if(userRepository.existsByUserName(userCreateRequest.getUserName())){
-//            throw new RuntimeException("Username already exists");
-//        }
-//        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-//
-//        UserEntity userEntity = UserEntity.builder()
-//                .role(userRole)
-//                .userName(userCreateRequest.getUserName())
-//                .fullName(userCreateRequest.getFullName())
-//                .passWord(passwordEncoder.encode(userCreateRequest.getPassWord()))
-//                .phone(userCreateRequest.getPhone())
-//                .dob(userCreateRequest.getDob())
-//                .email(userCreateRequest.getEmail())
-//                .gender(Gender.valueOf(userCreateRequest.getGender()))
-//                .build();
 		return userRepository.save(userEntity);
 	}
 
@@ -75,63 +56,59 @@ public class UserService {
 	public List<UserResponse> getAllUsers() {
 		log.info("Fetching all users from the database");
 		return userRepository.findAll().stream().map(this::mapToUserResponse).collect(Collectors.toList());
-
 	}
 
-	@PostAuthorize("returnObject.isPresent() && returnObject.get().userName == authentication.name or hasAuthority('SCOPE_ADMIN')")
-	public Optional<UserResponse> getUserById(Long userId) {
+	@PostAuthorize("returnObject.isPresent() && returnObject.get().email == authentication.name or hasAuthority('SCOPE_ADMIN')")
+	public Optional<UserResponse> getUserById(Integer userId) {
 		log.info("Fetching user with ID: {}", userId);
 		return userRepository.findById(userId).map(this::mapToUserResponse);
 	}
 
-	@PostAuthorize("returnObject.isPresent() && returnObject.get().userName == authentication.name or hasAuthority('SCOPE_ADMIN')")
-	public UserResponse getMyInfor() {
+	public UserResponse getMyInfo() {
 		log.info("Fetching my information");
 		var context = SecurityContextHolder.getContext();
-		String name = context.getAuthentication().getName();
-		UserEntity userEntity = userRepository.findByUserName(name)
+		String email = context.getAuthentication().getName();
+		UserEntity userEntity = userRepository.findByEmail(email)
 				.orElseThrow(() -> new WebException(ErrorCode.USER_NOT_FOUND));
 		return mapToUserResponse(userEntity);
 	}
 
-	@PostAuthorize("returnObject.isPresent() && returnObject.get().userName == authentication.name or hasAuthority('SCOPE_ADMIN')")
-	public UserResponse updateUser(Long userId, UserUpdateRequest userCreateRequest) {
+	@PostAuthorize("returnObject.email == authentication.name or hasAuthority('SCOPE_ADMIN')")
+	public UserResponse updateUser(Integer userId, UserUpdateRequest userCreateRequest) {
 		UserEntity userEntity = userRepository.findById(userId)
 				.orElseThrow(() -> new WebException(ErrorCode.USER_NOT_FOUND));
 
 		userEntity.setFullName(userCreateRequest.getFullName());
-		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-		userEntity.setPassWord(passwordEncoder.encode(userCreateRequest.getPassWord()));
 		userEntity.setPhone(userCreateRequest.getPhone());
 		userEntity.setDob(userCreateRequest.getDob());
-		userEntity.setEmail(userCreateRequest.getEmail());
-		userEntity.setGender(Gender.valueOf(userCreateRequest.getGender().toUpperCase()));
-		userEntity.setUpdatedAt(LocalDate.now());
+		userEntity.setGender(userCreateRequest.getGender());
+		userEntity.setAddress(userCreateRequest.getAddress());
+		userEntity.setUpdatedAt(LocalDateTime.now());
 
 		UserEntity updatedUser = userRepository.save(userEntity);
 
 		return mapToUserResponse(updatedUser);
 	}
 
-	@PostAuthorize("returnObject.isPresent() && returnObject.get().userName == authentication.name or hasAuthority('SCOPE_ADMIN')")
-	public void deleteUser(Long userId) {
+	@PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+	public void deleteUser(Integer userId) {
 		UserEntity userEntity = userRepository.findById(userId)
 				.orElseThrow(() -> new WebException(ErrorCode.USER_NOT_FOUND));
 		userRepository.delete(userEntity);
-
 	}
 
 	private UserResponse mapToUserResponse(UserEntity userEntity) {
 		UserResponse userResponse = new UserResponse();
 		userResponse.setUserId(userEntity.getUserId());
-		userResponse.setUserName(userEntity.getUserName());
-		userResponse.setPassWord(userEntity.getPassWord());
 		userResponse.setFullName(userEntity.getFullName());
+		userResponse.setEmail(userEntity.getEmail());
 		userResponse.setPhone(userEntity.getPhone());
 		userResponse.setDob(userEntity.getDob());
-		userResponse.setEmail(userEntity.getEmail());
 		userResponse.setGender(userEntity.getGender().name());
-		userResponse.setRoleName(userEntity.getRole().getRoleName());
+		userResponse.setAddress(userEntity.getAddress());
+		userResponse.setIsActive(userEntity.getIsActive());
+		userResponse.setCreatedAt(userEntity.getCreatedAt());
+		userResponse.setUpdatedAt(userEntity.getUpdatedAt());
 		return userResponse;
 	}
 }

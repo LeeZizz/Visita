@@ -2,9 +2,9 @@ package com.visita.dto.request;
 
 import java.time.LocalDate;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import com.visita.entities.Gender;
+
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
@@ -13,25 +13,20 @@ import lombok.Data;
 @Builder
 public class UserCreateRequest {
 
-	@Column(nullable = false, unique = true)
-	@Size(min = 5, message = "INVALID_USERNAME")
-	private String userName;
+	@Email(message = "INVALID_EMAIL")
+	private String email;
 
-	@Column(nullable = false)
 	@Size(min = 8, message = "INVALID_PASSWORD")
-	private String passWord;
+	private String password;
 
 	private String fullName;
 
-	@Column(nullable = false, length = 100)
-	private String email;
-
-	@Column(unique = true, nullable = false, length = 15)
+	@Size(max = 15, message = "INVALID_PHONE")
 	private String phone;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private String gender;
+	private Gender gender;
 
 	private LocalDate dob;
+
+	private String address;
 }
