@@ -3,7 +3,6 @@ package com.visita.services;
 import java.text.ParseException;
 import java.util.Date;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,27 +28,15 @@ import com.visita.repositories.UserRepository;
 @Service
 public class AuthenticationService {
 
+	private final UserRepository userRepository;
 	@Value("${jwt.secret}")
 	protected String secretKey;
 
-	@Autowired
-	private UserRepository userRepository;
+	public AuthenticationService(UserRepository userRepository) {
+		this.userRepository = userRepository;
+	}
 
 	public IntrospectResponse introspect(IntrospectRequest introSpectRequest) throws JOSEException, ParseException {
-//        var token = introSpectRequest.getToken();
-//        boolean isValid = true;
-//        try {
-//            JWSVerifier verifier = new MACVerifier(secretKey.getBytes());
-//            SignedJWT signedJWT = SignedJWT.parse(token);
-//            Date expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-//            var verified = signedJWT.verify(verifier);
-//        } catch (JOSEException  | ParseException e) {
-//            isValid = false;
-//            throw new RuntimeException("Invalid SignedJWT token");
-//        }
-//        return IntrospectResponse.builder()
-//                .valid(isValid ? "true" : "false")
-//                .build();
 		var token = introSpectRequest.getToken();
 		JWSVerifier verifier = new MACVerifier(secretKey.getBytes());
 		SignedJWT signedJWT = SignedJWT.parse(token);
@@ -61,13 +48,11 @@ public class AuthenticationService {
 	}
 
 	public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest) {
-		var user = userRepository.findByUserName((authenticationRequest.getUserName()))
+		var user = userRepository.findByEmail((authenticationRequest.getEmail()))
 				.orElseThrow(() -> new RuntimeException("User not found"));
 		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-		// return passwordEncoder.matches(authenticationRequest.getPassWord(),
-		// user.getPassWord());
 
-		boolean authenticated = passwordEncoder.matches(authenticationRequest.getPassWord(), user.getPassWord());
+		boolean authenticated = passwordEncoder.matches(authenticationRequest.getPassword(), user.getPassword());
 		if (!authenticated)
 			throw new RuntimeException("Not authenticated");
 
@@ -79,22 +64,23 @@ public class AuthenticationService {
 
 	private String generateToken(UserEntity userEntity) {
 		JWSHeader header = new JWSHeader(JWSAlgorithm.HS256);
-		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder().subject(userEntity.getUserName()).issuer("com.visita")
+		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder().subject(userEntity.getEmail()).issuer("com.visita")
 				.expirationTime(new Date(new Date().getTime() + 60 * 60 * 1000)) // 1 hour expiration
-				.claim("scope", buildScope(userEntity)).build();
+				.claim("scope", buildScope()).build();
 
 		Payload payload = new Payload(claimsSet.toJSONObject());
 		JWSObject jwsObject = new JWSObject(header, payload);
 
 		try {
-			jwsObject.sign(new MACSigner(secretKey));
+			jwsObject.sign(new MACSigner(secretKey.getBytes()));
 			return jwsObject.serialize();
 		} catch (JOSEException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private String buildScope(UserEntity userEntity) {
-		return userEntity.getRole().getRoleName();
+	private String buildScope() {
+		// UserEntity does not have a role. Returning a default scope.
+		return "USER";
 	}
 }

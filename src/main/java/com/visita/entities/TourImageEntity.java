@@ -1,7 +1,18 @@
 package com.visita.entities;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "tour_images")
@@ -11,19 +22,18 @@ import lombok.*;
 @Builder
 public class TourImageEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "image_id")
-    private Long imageId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "image_id")
+	private Long imageId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tour_id")
-    private TourEntity tour;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "tour_id")
+	private TourEntity tour;
 
-    @Column(name = "image_url", nullable = false, length = 500)
-    private String imageUrl;
+	@Column(name = "image_url", nullable = false, length = 500)
+	private String imageUrl;
 
-    @Column(length = 255)
-    private String description;
+	@Column
+	private String description;
 }
-
