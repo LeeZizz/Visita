@@ -60,7 +60,7 @@ public class BookingEntity {
 	private BigDecimal totalPrice;
 
 	@Enumerated(EnumType.STRING)
-	@Column(columnDefinition = "ENUM('Pending','Confirmed','Cancelled','Completed')")
+	@Column(columnDefinition = "ENUM('PENDING','CONFIRMED','CANCELLED','COMPLETED')")
 	private BookingStatus status;
 
 	@Column(name = "special_request", length = 500)
