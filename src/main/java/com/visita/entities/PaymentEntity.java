@@ -49,6 +49,6 @@ public class PaymentEntity {
 	private LocalDateTime paymentDate;
 
 	@Enumerated(EnumType.STRING)
-	@Column(columnDefinition = "ENUM('Pending','Success','Failed','Refunded')")
+	@Column(columnDefinition = "ENUM('PENDING','SUCCESS','FAILED','REFUNDED')")
 	private PaymentStatus status;
 }

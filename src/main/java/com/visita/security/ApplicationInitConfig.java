@@ -1,5 +1,7 @@
 package com.visita.security;
 
+import java.time.LocalDateTime;
+
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,7 +31,7 @@ public class ApplicationInitConfig {
 			if (adminRepository.findByUsername("admin").isEmpty()) {
 				AdminEntity adminEntity = AdminEntity.builder().username("admin")
 						.password(passwordEncoder.encode("admin")) // password: admin
-						.fullName("Administrator").email("admin@example.com").build();
+						.fullName("Administrator").email("admin@example.com").createdAt(LocalDateTime.now()).build();
 				adminRepository.save(adminEntity);
 				log.warn("Admin user created with username: admin and password: admin");
 			}
