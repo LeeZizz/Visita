@@ -19,7 +19,7 @@ public enum ErrorCode {
 	UNAUTHORIZED(1007, "You do not have permission", HttpStatus.FORBIDDEN),
 	UNAUTHENTICATED(1008, "You are not authenticated", HttpStatus.UNAUTHORIZED),;
 
-	private int code;
-	private String message;
-	private HttpStatusCode statusCode;
+	private final int code;
+	private final String message;
+	private final HttpStatusCode statusCode;
 }

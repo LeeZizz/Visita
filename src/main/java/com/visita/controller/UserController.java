@@ -3,7 +3,6 @@ package com.visita.controller;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,8 +28,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserController {
 
-	@Autowired
-	private UserService userService;
+	private final UserService userService;
+
+	public UserController(UserService userService) {
+		this.userService = userService;
+	}
 
 	@PostMapping("/create")
 	ApiResponse<UserEntity> createUser(@RequestBody @Valid UserCreateRequest userCreateRequest) {
@@ -42,7 +44,7 @@ public class UserController {
 	@GetMapping("/listUsers")
 	ApiResponse<List<UserResponse>> listUsers() {
 		var authentication = SecurityContextHolder.getContext().getAuthentication();
-		log.info("Username: " + authentication.getName());
+		log.info("Username: {}", authentication.getName());
 		authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
 
 		ApiResponse<List<UserResponse>> apiResponse = new ApiResponse<>();
@@ -56,19 +58,13 @@ public class UserController {
 		apiResponse.setResult(userService.getUserById(id));
 		return apiResponse;
 	}
-//    Optional<UserResponse> getUserById(@PathVariable Long id){
-//        return userService.getUserById(id);
-//    }
 
-	@GetMapping("/myInfor")
+	@GetMapping("/myInfo")
 	ApiResponse<UserResponse> getMyInfo() {
 		ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
 		apiResponse.setResult(userService.getMyInfo());
 		return apiResponse;
 	}
-//    UserResponse getMyInfo(){
-//        return userService.getMyInfo();
-//    }
 
 	@PutMapping("/update/{id}")
 	ApiResponse<UserResponse> updateUser(@PathVariable Integer id, @RequestBody UserUpdateRequest userUpdateRequest) {
@@ -76,19 +72,12 @@ public class UserController {
 		apiResponse.setResult(userService.updateUser(id, userUpdateRequest));
 		return apiResponse;
 	}
-//    UserResponse updateUser(@PathVariable Long id, @RequestBody UserUpdateRequest userUpdateRequest) {
-//        return userService.updateUser(id, userUpdateRequest);
-//    }
 
 	@DeleteMapping("/delete/{id}")
 	ApiResponse<String> deleteUser(@PathVariable Integer id) {
 		ApiResponse<String> apiResponse = new ApiResponse<>();
 		userService.deleteUser(id);
-		apiResponse.setResult("User đã bị xoá");
+		apiResponse.setResult("User deleted successfully");
 		return apiResponse;
 	}
-//    String deleteUser(@PathVariable Long id) {
-//        userService.deleteUser(id);
-//        return "User đã bị xoá";
-//    }
 }

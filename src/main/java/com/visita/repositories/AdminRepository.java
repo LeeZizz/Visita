@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import com.visita.entities.AdminEntity;
 
 @Repository
-public interface AdminRepository extends JpaRepository<AdminEntity, Long> {
-
+public interface AdminRepository extends JpaRepository<AdminEntity, Integer> {
 	Optional<AdminEntity> findByUsername(String username);
 }

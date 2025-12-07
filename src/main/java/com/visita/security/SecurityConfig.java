@@ -28,12 +28,6 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-//        http
-//                .csrf(csrf -> csrf.disable())
-//                .authorizeHttpRequests(auth -> auth
-//                        .anyRequest().permitAll()
-//                );
-//        return http.build();
 		httpSecurity.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, PUBLIC_API).permitAll()
 				.requestMatchers(HttpMethod.GET, "/users/listUsers").hasAuthority("SCOPE_ADMIN").anyRequest()
 				.authenticated());
@@ -47,7 +41,6 @@ public class SecurityConfig {
 	JwtDecoder jwtDecoder() {
 		SecretKeySpec secretKeySpec = new SecretKeySpec(signedKey.getBytes(), "HS256");
 		return NimbusJwtDecoder.withSecretKey(secretKeySpec).macAlgorithm(MacAlgorithm.HS256).build();
-
 	}
 
 	@Bean

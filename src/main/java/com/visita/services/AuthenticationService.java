@@ -44,7 +44,6 @@ public class AuthenticationService {
 		var verified = signedJWT.verify(verifier);
 		return IntrospectResponse.builder().valid((verified && new Date().before(expirationTime)) ? "true" : "false")
 				.build();
-
 	}
 
 	public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest) {
