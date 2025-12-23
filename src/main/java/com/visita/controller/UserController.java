@@ -41,24 +41,6 @@ public class UserController {
 		return apiResponse;
 	}
 
-	@GetMapping("/listUsers")
-	ApiResponse<List<UserResponse>> listUsers() {
-		var authentication = SecurityContextHolder.getContext().getAuthentication();
-		log.info("Username: {}", authentication.getName());
-		authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
-
-		ApiResponse<List<UserResponse>> apiResponse = new ApiResponse<>();
-		apiResponse.setResult(userService.getAllUsers());
-		return apiResponse;
-	}
-
-	@GetMapping("/{id}")
-	ApiResponse<Optional<UserResponse>> getUserById(@PathVariable String id) {
-		ApiResponse<Optional<UserResponse>> apiResponse = new ApiResponse<>();
-		apiResponse.setResult(userService.getUserById(id));
-		return apiResponse;
-	}
-
 	@GetMapping("/myInfo")
 	ApiResponse<UserResponse> getMyInfo() {
 		ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
@@ -70,14 +52,6 @@ public class UserController {
 	ApiResponse<UserResponse> updateUser(@PathVariable String id, @RequestBody UserUpdateRequest userUpdateRequest) {
 		ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
 		apiResponse.setResult(userService.updateUser(id, userUpdateRequest));
-		return apiResponse;
-	}
-
-	@DeleteMapping("/delete/{id}")
-	ApiResponse<String> deleteUser(@PathVariable String id) {
-		ApiResponse<String> apiResponse = new ApiResponse<>();
-		userService.deleteUser(id);
-		apiResponse.setResult("User deleted successfully");
 		return apiResponse;
 	}
 }
