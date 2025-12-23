@@ -23,9 +23,9 @@ import lombok.NoArgsConstructor;
 public class TourImageEntity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "image_id")
-	private Long imageId;
+	private String imageId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "tour_id")

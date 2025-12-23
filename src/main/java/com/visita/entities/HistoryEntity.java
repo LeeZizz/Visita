@@ -25,9 +25,9 @@ import lombok.NoArgsConstructor;
 public class HistoryEntity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "history_id")
-	private Long historyId;
+	private String historyId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")

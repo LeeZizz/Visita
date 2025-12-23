@@ -1,16 +1,8 @@
 package com.visita.entities;
 
-import java.time.LocalDateTime;
-import java.util.List;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,9 +17,9 @@ import lombok.NoArgsConstructor;
 public class AdminEntity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "admin_id")
-	private Integer adminId;
+	private String adminId;
 
 	@Column(nullable = false, unique = true, length = 50)
 	private String username;
@@ -44,6 +36,9 @@ public class AdminEntity {
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 
-	@OneToMany(mappedBy = "admin", fetch = FetchType.LAZY)
-	private List<ChatSessionEntity> chatSessions;
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+
 }

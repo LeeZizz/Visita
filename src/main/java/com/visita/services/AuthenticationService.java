@@ -3,6 +3,8 @@ package com.visita.services;
 import java.text.ParseException;
 import java.util.Date;
 
+import com.visita.exceptions.ErrorCode;
+import com.visita.exceptions.WebException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -75,7 +77,8 @@ public class AuthenticationService {
 
 		boolean authenticated = passwordEncoder.matches(authenticationRequest.getPassword(), storedPassword);
 		if (!authenticated) {
-			throw new RuntimeException("Not authenticated");
+//			throw new RuntimeException("Not authenticated");
+            throw new WebException(ErrorCode.UNAUTHENTICATED);
 		}
 
 		var token = generateToken(subject, scope);

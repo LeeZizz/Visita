@@ -4,14 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,9 +19,9 @@ import lombok.NoArgsConstructor;
 public class PromotionEntity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "promotion_id")
-	private Integer promotionId;
+	private String promotionId;
 
 	@Column(unique = true, length = 50)
 	private String code;
@@ -52,4 +45,5 @@ public class PromotionEntity {
 
 	@OneToMany(mappedBy = "promotion", fetch = FetchType.LAZY)
 	private List<BookingEntity> bookings;
+
 }

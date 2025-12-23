@@ -31,9 +31,9 @@ import lombok.NoArgsConstructor;
 public class BookingEntity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "booking_id")
-	private Integer bookingId;
+	private String bookingId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
@@ -42,6 +42,10 @@ public class BookingEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "tour_id")
 	private TourEntity tour;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "staff_id")
+    private StaffEntity staffEntity;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "promotion_id")
@@ -56,7 +60,7 @@ public class BookingEntity {
 	@Column(name = "num_children")
 	private Integer numChildren;
 
-	@Column(name = "total_price", nullable = false, precision = 15, scale = 2)
+	@Column(name = "total_price", nullable = false, precision = 15, scale = 3)
 	private BigDecimal totalPrice;
 
 	@Enumerated(EnumType.STRING)

@@ -52,29 +52,29 @@ public class UserController {
 		return apiResponse;
 	}
 
-	@GetMapping("/{id}")
-	ApiResponse<Optional<UserResponse>> getUserById(@PathVariable Integer id) {
+	@GetMapping("/{id:[0-9a-f\\-]{36}}")
+	ApiResponse<Optional<UserResponse>> getUserById(@PathVariable String id) {
 		ApiResponse<Optional<UserResponse>> apiResponse = new ApiResponse<>();
 		apiResponse.setResult(userService.getUserById(id));
 		return apiResponse;
 	}
 
-	@GetMapping("/myInfo")
+	@GetMapping("/myInfor")
 	ApiResponse<UserResponse> getMyInfo() {
 		ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
 		apiResponse.setResult(userService.getMyInfo());
 		return apiResponse;
 	}
 
-	@PutMapping("/update/{id}")
-	ApiResponse<UserResponse> updateUser(@PathVariable Integer id, @RequestBody UserUpdateRequest userUpdateRequest) {
+	@PutMapping("/update/{id:[0-9a-f\\-]{36}}")
+	ApiResponse<UserResponse> updateUser(@PathVariable String id, @RequestBody UserUpdateRequest userUpdateRequest) {
 		ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
 		apiResponse.setResult(userService.updateUser(id, userUpdateRequest));
 		return apiResponse;
 	}
 
-	@DeleteMapping("/delete/{id}")
-	ApiResponse<String> deleteUser(@PathVariable Integer id) {
+	@DeleteMapping("/delete/{id:[0-9a-f\\-]{36}}")
+	ApiResponse<String> deleteUser(@PathVariable String id) {
 		ApiResponse<String> apiResponse = new ApiResponse<>();
 		userService.deleteUser(id);
 		apiResponse.setResult("User deleted successfully");

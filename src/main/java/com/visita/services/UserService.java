@@ -46,8 +46,8 @@ public class UserService {
 		userEntity.setGender(userCreateRequest.getGender());
 		userEntity.setAddress(userCreateRequest.getAddress());
 		userEntity.setIsActive(true);
-		userEntity.setCreatedAt(LocalDateTime.now());
-		userEntity.setUpdatedAt(LocalDateTime.now());
+//		userEntity.setCreatedAt(LocalDateTime.now());
+//		userEntity.setUpdatedAt(LocalDateTime.now());
 
 		return userRepository.save(userEntity);
 	}
@@ -59,7 +59,7 @@ public class UserService {
 	}
 
 	@PostAuthorize("returnObject.isPresent() && returnObject.get().email == authentication.name or hasAuthority('SCOPE_ADMIN')")
-	public Optional<UserResponse> getUserById(Integer userId) {
+	public Optional<UserResponse> getUserById(String userId) {
 		log.info("Fetching user with ID: {}", userId);
 		return userRepository.findById(userId).map(this::mapToUserResponse);
 	}
@@ -74,7 +74,7 @@ public class UserService {
 	}
 
 	@PostAuthorize("returnObject.email == authentication.name or hasAuthority('SCOPE_ADMIN')")
-	public UserResponse updateUser(Integer userId, UserUpdateRequest userCreateRequest) {
+	public UserResponse updateUser(String userId, UserUpdateRequest userCreateRequest) {
 		UserEntity userEntity = userRepository.findById(userId)
 				.orElseThrow(() -> new WebException(ErrorCode.USER_NOT_FOUND));
 
@@ -91,7 +91,7 @@ public class UserService {
 	}
 
 	@PreAuthorize("hasAuthority('SCOPE_ADMIN')")
-	public void deleteUser(Integer userId) {
+	public void deleteUser(String userId) {
 		UserEntity userEntity = userRepository.findById(userId)
 				.orElseThrow(() -> new WebException(ErrorCode.USER_NOT_FOUND));
 		userRepository.delete(userEntity);

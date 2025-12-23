@@ -3,17 +3,7 @@ package com.visita.entities;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,9 +18,9 @@ import lombok.NoArgsConstructor;
 public class PaymentEntity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "payment_id")
-	private Long paymentId;
+	private String paymentId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "booking_id")
@@ -51,4 +41,9 @@ public class PaymentEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(columnDefinition = "ENUM('PENDING','SUCCESS','FAILED','REFUNDED')")
 	private PaymentStatus status;
+
+    @PrePersist
+    protected void onCreate() {
+        this.paymentDate = LocalDateTime.now();
+    }
 }
