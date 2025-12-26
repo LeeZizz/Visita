@@ -46,8 +46,8 @@ public class UserService {
 		userEntity.setGender(userCreateRequest.getGender());
 		userEntity.setAddress(userCreateRequest.getAddress());
 		userEntity.setIsActive(true);
-//		userEntity.setCreatedAt(LocalDateTime.now());
-//		userEntity.setUpdatedAt(LocalDateTime.now());
+		userEntity.setCreatedAt(LocalDateTime.now());
+		userEntity.setUpdatedAt(LocalDateTime.now());
 
 		return userRepository.save(userEntity);
 	}

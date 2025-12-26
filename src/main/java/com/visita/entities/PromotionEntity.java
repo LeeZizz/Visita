@@ -45,5 +45,4 @@ public class PromotionEntity {
 
 	@OneToMany(mappedBy = "promotion", fetch = FetchType.LAZY)
 	private List<BookingEntity> bookings;
-
 }
