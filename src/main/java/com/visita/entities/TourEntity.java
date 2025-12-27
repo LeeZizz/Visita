@@ -57,6 +57,10 @@ public class TourEntity {
 	@Column(nullable = false)
 	private Integer capacity;
 
+	@Column(name = "is_active", nullable = false)
+	@Builder.Default
+	private Boolean isActive = true;
+
 	@Column
 	private Integer availability; // 1 / 0
 

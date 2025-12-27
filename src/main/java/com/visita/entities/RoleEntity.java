@@ -29,6 +29,7 @@ public class RoleEntity {
 
     @lombok.ToString.Exclude
     @lombok.EqualsAndHashCode.Exclude
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToMany(mappedBy = "roles")
     private Set<UserEntity> users;
 }

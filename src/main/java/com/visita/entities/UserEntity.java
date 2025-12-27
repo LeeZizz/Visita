@@ -96,9 +96,5 @@ public class UserEntity {
 	@PreUpdate
 	protected void onUpdate() {
 		this.updatedAt = LocalDateTime.now();
-	}}
-
-
-	   
-
-	
+	}
+}

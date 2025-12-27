@@ -43,6 +43,10 @@ public class PromotionEntity {
 
 	private Integer quantity;
 
+	@Column(name = "is_active", nullable = false)
+	@Builder.Default
+	private Boolean isActive = true;
+
 	@OneToMany(mappedBy = "promotion", fetch = FetchType.LAZY)
 	private List<BookingEntity> bookings;
 }

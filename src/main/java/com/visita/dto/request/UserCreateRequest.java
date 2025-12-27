@@ -13,6 +13,9 @@ import lombok.Data;
 @Builder
 public class UserCreateRequest {
 
+	@Size(min = 3, message = "USERNAME_INVALID")
+	private String username;
+
 	@Email(message = "INVALID_EMAIL")
 	private String email;
 

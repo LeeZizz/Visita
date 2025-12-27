@@ -41,8 +41,13 @@ public class UserService {
 		if (userRepository.existsByEmail(userCreateRequest.getEmail())) {
 			throw new WebException(ErrorCode.USER_EXISTED);
 		}
+		if (userCreateRequest.getUsername() != null
+				&& userRepository.existsByUsername(userCreateRequest.getUsername())) {
+			throw new WebException(ErrorCode.USER_EXISTED); // Reuse for now or add USERNAME_EXISTED
+		}
 
 		UserEntity userEntity = new UserEntity();
+		userEntity.setUsername(userCreateRequest.getUsername());
 		userEntity.setFullName(userCreateRequest.getFullName());
 		userEntity.setPassword(passwordEncoder.encode(userCreateRequest.getPassword()));
 		userEntity.setPhone(userCreateRequest.getPhone());
@@ -67,10 +72,51 @@ public class UserService {
 	}
 
 	@PreAuthorize("hasRole('ADMIN')")
+	public UserResponse createStaff(UserCreateRequest userCreateRequest) {
+		if (userRepository.existsByEmail(userCreateRequest.getEmail())) {
+			throw new WebException(ErrorCode.USER_EXISTED);
+		}
+		if (userCreateRequest.getUsername() != null
+				&& userRepository.existsByUsername(userCreateRequest.getUsername())) {
+			throw new WebException(ErrorCode.USER_EXISTED);
+		}
+
+		UserEntity userEntity = new UserEntity();
+		userEntity.setUsername(userCreateRequest.getUsername());
+		userEntity.setFullName(userCreateRequest.getFullName());
+		userEntity.setPassword(passwordEncoder.encode(userCreateRequest.getPassword()));
+		userEntity.setPhone(userCreateRequest.getPhone());
+		userEntity.setDob(userCreateRequest.getDob());
+		userEntity.setEmail(userCreateRequest.getEmail());
+		userEntity.setGender(userCreateRequest.getGender());
+		userEntity.setAddress(userCreateRequest.getAddress());
+		userEntity.setIsActive(true);
+		userEntity.setCreatedAt(LocalDateTime.now());
+		userEntity.setUpdatedAt(LocalDateTime.now());
+
+		// Assign STAFF role
+		RoleEntity staffRole = roleRepository.findById("STAFF").orElseGet(() -> {
+			return RoleEntity.builder().name("STAFF").description("Staff role").build();
+		});
+		var roles = new HashSet<RoleEntity>();
+		roles.add(staffRole);
+		userEntity.setRoles(roles);
+
+		return mapToUserResponse(userRepository.save(userEntity));
+	}
+
+	@PreAuthorize("hasRole('ADMIN')")
 	public org.springframework.data.domain.Page<UserResponse> getAllUsers(int page, int size) {
 		log.info("Fetching all users with page: {} and size: {}", page, size);
 		org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
 		return userRepository.findAllByRoles_Name("USER", pageable).map(this::mapToUserResponse);
+	}
+
+	@PreAuthorize("hasRole('ADMIN')")
+	public org.springframework.data.domain.Page<UserResponse> getAllStaffs(int page, int size) {
+		log.info("Fetching all staffs with page: {} and size: {}", page, size);
+		org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+		return userRepository.findAllByRoles_Name("STAFF", pageable).map(this::mapToUserResponse);
 	}
 
 	@PostAuthorize("returnObject.isPresent() && (returnObject.get().email == authentication.name || returnObject.get().username == authentication.name) || hasRole('ADMIN')")
@@ -104,6 +150,15 @@ public class UserService {
 		UserEntity updatedUser = userRepository.save(userEntity);
 
 		return mapToUserResponse(updatedUser);
+	}
+
+	@PreAuthorize("hasRole('ADMIN')")
+	public void updateUserStatus(String userId, boolean isActive) {
+		UserEntity userEntity = userRepository.findById(userId)
+				.orElseThrow(() -> new WebException(ErrorCode.USER_NOT_FOUND));
+		userEntity.setIsActive(isActive);
+		userEntity.setUpdatedAt(LocalDateTime.now());
+		userRepository.save(userEntity);
 	}
 
 	@PreAuthorize("hasRole('ADMIN')")
