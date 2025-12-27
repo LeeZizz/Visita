@@ -43,9 +43,15 @@ public class BookingEntity {
 	@JoinColumn(name = "tour_id")
 	private TourEntity tour;
 
+<<<<<<< HEAD
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "staff_id")
 	private UserEntity staff;
+=======
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "staff_id")
+    private StaffEntity staff;
+>>>>>>> origin/main
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "promotion_id")

@@ -23,9 +23,18 @@ public class TourEntity {
 	@Column(name = "tour_id")
 	private String tourId;
 
+<<<<<<< HEAD
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "staff_id")
 	private UserEntity staff;
+=======
+	@Version
+	private Long version;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "staff_id")
+    private StaffEntity staffEntity;
+>>>>>>> origin/main
 
 	@Column(nullable = false)
 	private String title;

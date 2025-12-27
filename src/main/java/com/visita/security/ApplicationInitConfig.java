@@ -32,6 +32,7 @@ public class ApplicationInitConfig {
 	@Bean
 	ApplicationRunner applicationRunner(UserRepository userRepository, RoleRepository roleRepository) {
 		return args -> {
+<<<<<<< HEAD
 			// 1. Initialize Roles
 			if (!roleRepository.existsById("ADMIN")) {
 				roleRepository.save(RoleEntity.builder().name("ADMIN").description("Administrator").build());
@@ -60,6 +61,14 @@ public class ApplicationInitConfig {
 						.build();
 				userRepository.save(adminUser);
 				log.warn("Admin user created with username: admin and password: admin");
+=======
+			if (adminRepository.findByUsername("admin").isEmpty()) {
+				AdminEntity adminEntity = AdminEntity.builder().username("admin@visita.com")
+						.password(passwordEncoder.encode("admin123")) // password: admin
+						.fullName("Administrator").email("admin@example.com").createdAt(LocalDateTime.now()).build();
+				adminRepository.save(adminEntity);
+				log.warn("Admin user created with username: admin@visita.com and password: admin123");
+>>>>>>> origin/main
 			}
 		};
 	}

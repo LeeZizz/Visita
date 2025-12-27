@@ -29,9 +29,16 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
 	private final String[] PUBLIC_POST_API = { "/users/create", "/auth/login", "/auth/introspect", "/auth/refresh",
+<<<<<<< HEAD
 			"/auth/outbound/authentication", "/auth/logout" };
 
 	private final String[] PUBLIC_GET_API = { "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**" };
+=======
+			"/auth/outbound/authentication" };
+
+	private final String[] PUBLIC_GET_API = { "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**" };
+
+>>>>>>> origin/main
 	@Value("${jwt.secret}")
 	protected String signedKey;
 
@@ -43,7 +50,11 @@ public class SecurityConfig {
 		httpSecurity.authorizeHttpRequests(request -> request
 				.requestMatchers(HttpMethod.POST, PUBLIC_POST_API).permitAll()
 				.requestMatchers(HttpMethod.GET, PUBLIC_GET_API).permitAll()
+<<<<<<< HEAD
 				.requestMatchers("/admins/**").hasRole("ADMIN")
+=======
+				.requestMatchers("/admins/**").hasAuthority("SCOPE_ADMIN")
+>>>>>>> origin/main
 				.anyRequest().authenticated());
 		httpSecurity.oauth2ResourceServer((oauth2) -> oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder())
 				.jwtAuthenticationConverter(jwtAuthenticationConverter()))
@@ -54,6 +65,7 @@ public class SecurityConfig {
 	}
 
 	@Bean
+<<<<<<< HEAD
 	org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter jwtAuthenticationConverter() {
 		org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter();
 		grantedAuthoritiesConverter.setAuthorityPrefix("");
@@ -64,6 +76,8 @@ public class SecurityConfig {
 	}
 
 	@Bean
+=======
+>>>>>>> origin/main
 	CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(List.of("http://localhost:5173"));

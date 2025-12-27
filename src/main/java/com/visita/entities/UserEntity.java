@@ -28,6 +28,9 @@ public class UserEntity {
 
 	@Column(nullable = false)
 	private String password;
+    
+    @Column(name = "full_name", nullable = false)
+    private String fullName;
 
 	@Column(name = "full_name", nullable = false)
 	private String fullName;
@@ -82,10 +85,21 @@ public class UserEntity {
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<HistoryEntity> histories;
 
+<<<<<<< HEAD
 	@lombok.ToString.Exclude
 	@lombok.EqualsAndHashCode.Exclude
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<FavoriteEntity> favorites;
+=======
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+	private List<FavoriteEntity> favorites;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+>>>>>>> origin/main
 
 	@PrePersist
 	protected void onCreate() {
