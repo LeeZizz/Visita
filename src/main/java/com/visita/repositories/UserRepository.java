@@ -10,5 +10,13 @@ import com.visita.entities.UserEntity;
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, String> {
 	Optional<UserEntity> findByEmail(String email);
+
+	Optional<UserEntity> findByUsername(String username);
+
 	boolean existsByEmail(String email);
+
+	boolean existsByUsername(String username);
+
+	org.springframework.data.domain.Page<UserEntity> findAllByRoles_Name(String role,
+			org.springframework.data.domain.Pageable pageable);
 }

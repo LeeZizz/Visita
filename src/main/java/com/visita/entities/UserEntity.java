@@ -34,9 +34,18 @@ public class UserEntity {
 
 	@Column(length = 15)
 	private String phone;
-    
-    @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "ENUM('MALE','FEMALE','OTHER')")
+
+	@Column(unique = true, length = 50)
+	private String username;
+
+	@lombok.ToString.Exclude
+	@lombok.EqualsAndHashCode.Exclude
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_name"))
+	private java.util.Set<RoleEntity> roles;
+
+	@Enumerated(EnumType.STRING)
+	@Column(columnDefinition = "ENUM('MALE','FEMALE','OTHER')")
 	private Gender gender;
 
 	private LocalDate dob;
@@ -53,26 +62,34 @@ public class UserEntity {
 	@Column(name = "updated_at")
 	private LocalDateTime updatedAt;
 
+	@lombok.ToString.Exclude
+	@lombok.EqualsAndHashCode.Exclude
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<BookingEntity> bookings;
 
+	@lombok.ToString.Exclude
+	@lombok.EqualsAndHashCode.Exclude
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<ReviewEntity> reviews;
 
+	@lombok.ToString.Exclude
+	@lombok.EqualsAndHashCode.Exclude
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<ChatSessionEntity> chatSessions;
 
+	@lombok.ToString.Exclude
+	@lombok.EqualsAndHashCode.Exclude
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<HistoryEntity> histories;
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
+	@PrePersist
+	protected void onCreate() {
+		this.createdAt = LocalDateTime.now();
+		this.updatedAt = LocalDateTime.now();
+	}
 
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+	@PreUpdate
+	protected void onUpdate() {
+		this.updatedAt = LocalDateTime.now();
+	}
 }

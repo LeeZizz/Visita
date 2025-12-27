@@ -51,4 +51,11 @@ public class AuthenticationController {
 		var result = authenticationService.outboundAuthenticate(request);
 		return ApiResponse.<AuthenticationResponse>builder().result(result).build();
 	}
+
+	@PostMapping("/logout")
+	ApiResponse<Void> logout(@RequestBody com.visita.dto.request.LogoutRequest request)
+			throws ParseException, JOSEException {
+		authenticationService.logout(request);
+		return ApiResponse.<Void>builder().build();
+	}
 }

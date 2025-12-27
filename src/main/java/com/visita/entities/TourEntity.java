@@ -23,9 +23,9 @@ public class TourEntity {
 	@Column(name = "tour_id")
 	private String tourId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "staff_id")
-    private StaffEntity staffEntity;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "staff_id")
+	private UserEntity staff;
 
 	@Column(nullable = false)
 	private String title;

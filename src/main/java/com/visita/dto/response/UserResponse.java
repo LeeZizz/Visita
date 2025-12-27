@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserResponse {
 	private String userId;
+	private String username;
 	private String fullName;
 	private String email;
 	private String phone;
@@ -21,6 +22,7 @@ public class UserResponse {
 	private LocalDate dob;
 	private String address;
 	private Boolean isActive;
+	private java.util.Set<String> roles;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 }

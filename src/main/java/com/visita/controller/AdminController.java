@@ -31,14 +31,16 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    ApiResponse<java.util.List<com.visita.dto.response.UserResponse>> listUsers() {
+    ApiResponse<org.springframework.data.domain.Page<com.visita.dto.response.UserResponse>> listUsers(
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "1") int page,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "5") int size) {
         var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext()
                 .getAuthentication();
         log.info("Username: {}", authentication.getName());
         authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
 
-        ApiResponse<java.util.List<com.visita.dto.response.UserResponse>> apiResponse = new ApiResponse<>();
-        apiResponse.setResult(userService.getAllUsers());
+        ApiResponse<org.springframework.data.domain.Page<com.visita.dto.response.UserResponse>> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(userService.getAllUsers(page - 1, size));
         return apiResponse;
     }
 

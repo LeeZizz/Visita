@@ -29,7 +29,7 @@ public class ChatSessionEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "staff_id")
-	private StaffEntity staffEntity; // Nhân viên hỗ trợ (có thể null)
+	private UserEntity staff; // Nhân viên hỗ trợ (có thể null)
 
 	@Enumerated(EnumType.STRING)
 	@Column(columnDefinition = "ENUM('OPEN','CLOSED')")
@@ -44,14 +44,14 @@ public class ChatSessionEntity {
 	@OneToMany(mappedBy = "session", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<ChatMessageEntity> messages;
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
+	@PrePersist
+	protected void onCreate() {
+		this.createdAt = LocalDateTime.now();
+		this.updatedAt = LocalDateTime.now();
+	}
 
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+	@PreUpdate
+	protected void onUpdate() {
+		this.updatedAt = LocalDateTime.now();
+	}
 }

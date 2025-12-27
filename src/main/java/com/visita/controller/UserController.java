@@ -1,10 +1,5 @@
 package com.visita.controller;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,7 +12,6 @@ import com.visita.dto.request.UserCreateRequest;
 import com.visita.dto.request.UserUpdateRequest;
 import com.visita.dto.response.ApiResponse;
 import com.visita.dto.response.UserResponse;
-import com.visita.entities.UserEntity;
 import com.visita.services.UserService;
 
 import jakarta.validation.Valid;
@@ -35,8 +29,8 @@ public class UserController {
 	}
 
 	@PostMapping("/create")
-	ApiResponse<UserEntity> createUser(@RequestBody @Valid UserCreateRequest userCreateRequest) {
-		ApiResponse<UserEntity> apiResponse = new ApiResponse<>();
+	ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreateRequest userCreateRequest) {
+		ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
 		apiResponse.setResult(userService.createUserRequest(userCreateRequest));
 		return apiResponse;
 	}
