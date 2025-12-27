@@ -71,4 +71,7 @@ public class TourEntity {
 
 	@OneToMany(mappedBy = "tour", fetch = FetchType.LAZY)
 	private List<HistoryEntity> histories;
+
+	@OneToMany(mappedBy = "tour", fetch = FetchType.LAZY)
+	private List<FavoriteEntity> favorites;
 }

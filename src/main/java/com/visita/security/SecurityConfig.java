@@ -1,5 +1,8 @@
 package com.visita.security;
 
+import java.util.Arrays;
+import java.util.List;
+
 import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -16,14 +19,19 @@ import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
-	private final String[] PUBLIC_API = { "/users/create", "/auth/login", "/auth/introspect", "/auth/refresh",
+	private final String[] PUBLIC_POST_API = { "/users/create", "/auth/login", "/auth/introspect", "/auth/refresh",
 			"/auth/outbound/authentication", "/auth/logout" };
+
+	private final String[] PUBLIC_GET_API = { "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**" };
 	@Value("${jwt.secret}")
 	protected String signedKey;
 
@@ -32,13 +40,16 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
-		httpSecurity.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, PUBLIC_API).permitAll()
+		httpSecurity.authorizeHttpRequests(request -> request
+				.requestMatchers(HttpMethod.POST, PUBLIC_POST_API).permitAll()
+				.requestMatchers(HttpMethod.GET, PUBLIC_GET_API).permitAll()
 				.requestMatchers("/admins/**").hasRole("ADMIN")
 				.anyRequest().authenticated());
 		httpSecurity.oauth2ResourceServer((oauth2) -> oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder())
 				.jwtAuthenticationConverter(jwtAuthenticationConverter()))
 				.authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
 		httpSecurity.csrf(AbstractHttpConfigurer::disable);
+		httpSecurity.cors(cors -> cors.configurationSource(corsConfigurationSource()));
 		return httpSecurity.build();
 	}
 
@@ -50,6 +61,18 @@ public class SecurityConfig {
 		org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter jwtAuthenticationConverter = new org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter();
 		jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
 		return jwtAuthenticationConverter;
+	}
+
+	@Bean
+	CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+		configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+		configuration.setAllowedHeaders(List.of("*"));
+		configuration.setAllowCredentials(true);
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+		return source;
 	}
 
 	@Bean

@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdminResponse {
+    
     private String adminId;
     private String username;
     private String fullName;

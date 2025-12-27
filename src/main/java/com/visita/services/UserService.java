@@ -51,6 +51,9 @@ public class UserService {
 		userEntity.setGender(userCreateRequest.getGender());
 		userEntity.setAddress(userCreateRequest.getAddress());
 		userEntity.setIsActive(true);
+		// Assign default USER role : set created_at and updated_at
+		userEntity.setCreatedAt(LocalDateTime.now());
+		userEntity.setUpdatedAt(LocalDateTime.now());
 
 		// Assign default USER role
 		RoleEntity userRole = roleRepository.findById("USER").orElseGet(() -> {
@@ -107,7 +110,9 @@ public class UserService {
 	public void deleteUser(String userId) {
 		UserEntity userEntity = userRepository.findById(userId)
 				.orElseThrow(() -> new WebException(ErrorCode.USER_NOT_FOUND));
-		userRepository.delete(userEntity);
+		userEntity.setIsActive(false);
+		userEntity.setUpdatedAt(LocalDateTime.now());
+		userRepository.save(userEntity);
 	}
 
 	private UserResponse mapToUserResponse(UserEntity userEntity) {

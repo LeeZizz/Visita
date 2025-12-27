@@ -23,14 +23,14 @@ public class UserEntity {
 	@Column(name = "user_id")
 	private String userId;
 
-	@Column(name = "full_name", nullable = false)
-	private String fullName;
-
 	@Column(nullable = false, unique = true, length = 100)
 	private String email;
 
 	@Column(nullable = false)
 	private String password;
+
+	@Column(name = "full_name", nullable = false)
+	private String fullName;
 
 	@Column(length = 15)
 	private String phone;
@@ -81,6 +81,11 @@ public class UserEntity {
 	@lombok.EqualsAndHashCode.Exclude
 	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
 	private List<HistoryEntity> histories;
+
+	@lombok.ToString.Exclude
+	@lombok.EqualsAndHashCode.Exclude
+	@OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+	private List<FavoriteEntity> favorites;
 
 	@PrePersist
 	protected void onCreate() {

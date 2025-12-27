@@ -32,7 +32,6 @@ public class ApplicationInitConfig {
 	@Bean
 	ApplicationRunner applicationRunner(UserRepository userRepository, RoleRepository roleRepository) {
 		return args -> {
-
 			// 1. Initialize Roles
 			if (!roleRepository.existsById("ADMIN")) {
 				roleRepository.save(RoleEntity.builder().name("ADMIN").description("Administrator").build());

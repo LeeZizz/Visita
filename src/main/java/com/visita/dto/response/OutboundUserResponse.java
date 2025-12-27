@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class OutboundUserResponse {
+    
     private String id;
     private String email;
 
