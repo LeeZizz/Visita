@@ -3,7 +3,6 @@ package com.visita.services;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.visita.dto.request.TourRequest;
 import com.visita.entities.TourEntity;
@@ -42,6 +41,7 @@ public class TourService {
                 .endDate(request.getEndDate())
                 .capacity(request.getCapacity())
                 .category(request.getCategory()) // Map category
+                .region(request.getRegion()) // Map region
                 .availability(request.getAvailability() != null ? request.getAvailability() : 1)
                 .build();
 
@@ -70,6 +70,9 @@ public class TourService {
         if (request.getCategory() != null) {
             tour.setCategory(request.getCategory());
         }
+        if (request.getRegion() != null) {
+            tour.setRegion(request.getRegion());
+        }
         if (request.getAvailability() != null) {
             tour.setAvailability(request.getAvailability());
         }
@@ -97,6 +100,7 @@ public class TourService {
             String title,
             String destination,
             com.visita.enums.TourCategory category,
+            com.visita.enums.Region region,
             java.math.BigDecimal minPrice,
             java.math.BigDecimal maxPrice,
             java.time.LocalDate startDateFrom,
@@ -137,15 +141,20 @@ public class TourService {
         // Build Specification
         org.springframework.data.jpa.domain.Specification<TourEntity> spec = com.visita.specification.TourSpecification
                 .filterTours(
-                        title, destination, category, minPrice, maxPrice, startDateFrom, endDateTo, endDateLimit,
+                        title, destination, category, region, minPrice, maxPrice, startDateFrom, endDateTo,
+                        endDateLimit,
                         minRating, minCapacity);
 
         return tourRepository.findAll(spec, pageable);
     }
 
     public TourEntity getTourById(String id) {
-        return tourRepository.findById(id)
+        TourEntity tour = tourRepository.findById(id)
                 .orElseThrow(() -> new WebException(ErrorCode.TOUR_NOT_FOUND));
+        if (!tour.getIsActive()) {
+            throw new WebException(ErrorCode.TOUR_NOT_FOUND);
+        }
+        return tour;
     }
 
     public List<TourEntity> getAllTours() {

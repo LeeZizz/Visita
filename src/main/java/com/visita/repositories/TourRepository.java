@@ -4,7 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.visita.entities.TourEntity;
-import com.visita.enums.TourCategory;
 
 @Repository
 public interface TourRepository

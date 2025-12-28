@@ -23,7 +23,8 @@ public enum ErrorCode {
 	PROMOTION_NOT_FOUND(1011, "Promotion not found", HttpStatus.NOT_FOUND),
 	END_DATE_AFTER_START_DATE(1012, "End date must be after start date", HttpStatus.BAD_REQUEST),
 	STAFF_ID_REQUIRED(1013, "Staff ID is required", HttpStatus.BAD_REQUEST),
-	USERNAME_INVALID(1014, "Username must be at least 3 characters", HttpStatus.BAD_REQUEST);
+	USERNAME_INVALID(1014, "Username must be at least 3 characters", HttpStatus.BAD_REQUEST),
+	IMAGE_NOT_FOUND(1015, "Image not found", HttpStatus.NOT_FOUND);
 
 	private final int code;
 	private final String message;

@@ -56,5 +56,7 @@ public class TourRequest {
 
     private com.visita.enums.TourCategory category;
 
+    private com.visita.enums.Region region;
+
     Integer availability; // 1 for available, 0 for unavailable
 }

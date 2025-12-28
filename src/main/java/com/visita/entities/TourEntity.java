@@ -69,6 +69,10 @@ public class TourEntity {
 	@Column(length = 50)
 	private com.visita.enums.TourCategory category;
 
+	@Enumerated(EnumType.STRING)
+	@Column(length = 50)
+	private com.visita.enums.Region region;
+
 	@Column
 	private Integer availability; // 1 / 0
 

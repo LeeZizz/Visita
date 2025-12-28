@@ -3,7 +3,6 @@ package com.visita.services;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.visita.dto.request.PromotionRequest;
 import com.visita.entities.PromotionEntity;

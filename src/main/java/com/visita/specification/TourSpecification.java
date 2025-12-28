@@ -17,6 +17,7 @@ public class TourSpecification {
             String title,
             String destination, // New: Filter by destination (like "Ha Long")
             TourCategory category,
+            com.visita.enums.Region region, // New: Filter by Region
             BigDecimal minPrice,
             BigDecimal maxPrice,
             LocalDate startDateFrom,
@@ -46,6 +47,11 @@ public class TourSpecification {
             // Category
             if (category != null) {
                 predicates.add(criteriaBuilder.equal(root.get("category"), category));
+            }
+
+            // Region
+            if (region != null) {
+                predicates.add(criteriaBuilder.equal(root.get("region"), region));
             }
 
             // Price Range (priceAdult)

@@ -28,6 +28,7 @@ public class TourController {
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String destination,
             @RequestParam(required = false) com.visita.enums.TourCategory category,
+            @RequestParam(required = false) com.visita.enums.Region region,
             @RequestParam(required = false) java.math.BigDecimal minPrice,
             @RequestParam(required = false) java.math.BigDecimal maxPrice,
             @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDateFrom,
@@ -40,7 +41,7 @@ public class TourController {
             @RequestParam(required = false) String sortDirection) {
         ApiResponse<org.springframework.data.domain.Page<TourEntity>> apiResponse = new ApiResponse<>();
         apiResponse.setResult(
-                tourService.getAllActiveTours(page - 1, size, title, destination, category, minPrice, maxPrice,
+                tourService.getAllActiveTours(page - 1, size, title, destination, category, region, minPrice, maxPrice,
                         startDateFrom,
                         endDateTo, endDateLimit, minRating, numAdults, numChildren, sortBy, sortDirection));
         return apiResponse;
