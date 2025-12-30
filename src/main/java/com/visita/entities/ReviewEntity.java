@@ -37,8 +37,15 @@ public class ReviewEntity {
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
+	@Column(name = "is_visible")
+	@Builder.Default
+	private Boolean isVisible = true;
+
+	@PrePersist
+	protected void onCreate() {
+		this.createdAt = LocalDateTime.now();
+		if (this.isVisible == null) {
+			this.isVisible = true;
+		}
+	}
 }

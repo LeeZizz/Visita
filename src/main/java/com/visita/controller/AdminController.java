@@ -19,13 +19,18 @@ public class AdminController {
     private final com.visita.services.UserService userService;
     private final com.visita.services.TourService tourService;
     private final com.visita.services.PromotionService promotionService;
+    private final com.visita.services.BookingService bookingService;
+    private final com.visita.services.ReviewService reviewService;
 
     public AdminController(AdminService adminService, com.visita.services.UserService userService,
-            com.visita.services.TourService tourService, com.visita.services.PromotionService promotionService) {
+            com.visita.services.TourService tourService, com.visita.services.PromotionService promotionService,
+            com.visita.services.BookingService bookingService, com.visita.services.ReviewService reviewService) {
         this.adminService = adminService;
         this.userService = userService;
         this.tourService = tourService;
         this.promotionService = promotionService;
+        this.bookingService = bookingService;
+        this.reviewService = reviewService;
     }
 
     @GetMapping("/myInfo")
@@ -185,6 +190,72 @@ public class AdminController {
     ApiResponse<java.util.List<com.visita.entities.PromotionEntity>> getAllPromotions() {
         ApiResponse<java.util.List<com.visita.entities.PromotionEntity>> apiResponse = new ApiResponse<>();
         apiResponse.setResult(promotionService.getAllPromotions());
+        return apiResponse;
+    }
+    // --- Booking Management ---
+
+    @org.springframework.web.bind.annotation.GetMapping("/bookings")
+    ApiResponse<org.springframework.data.domain.Page<com.visita.dto.response.BookingDetailResponse>> getAllBookings(
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "1") int page,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "10") int size) {
+        ApiResponse<org.springframework.data.domain.Page<com.visita.dto.response.BookingDetailResponse>> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(bookingService.getAllBookings(page - 1, size));
+        return apiResponse;
+    }
+
+    @org.springframework.web.bind.annotation.GetMapping("/bookings/search")
+    ApiResponse<org.springframework.data.domain.Page<com.visita.dto.response.BookingDetailResponse>> searchBookings(
+            @org.springframework.web.bind.annotation.RequestParam String keyword,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "1") int page,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "10") int size) {
+        ApiResponse<org.springframework.data.domain.Page<com.visita.dto.response.BookingDetailResponse>> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(bookingService.searchBookings(keyword, page - 1, size));
+        return apiResponse;
+    }
+
+    @org.springframework.web.bind.annotation.GetMapping("/bookings/{id}")
+    ApiResponse<com.visita.dto.response.BookingDetailResponse> getBookingById(
+            @org.springframework.web.bind.annotation.PathVariable String id) {
+        ApiResponse<com.visita.dto.response.BookingDetailResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(bookingService.getBookingById(id));
+        return apiResponse;
+    }
+
+    @org.springframework.web.bind.annotation.PutMapping("/bookings/{id}")
+    ApiResponse<com.visita.dto.response.BookingDetailResponse> updateBooking(
+            @org.springframework.web.bind.annotation.PathVariable String id,
+            @org.springframework.web.bind.annotation.RequestBody com.visita.dto.request.BookingUpdateRequest request) {
+        ApiResponse<com.visita.dto.response.BookingDetailResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(bookingService.updateBooking(id, request));
+        return apiResponse;
+    }
+
+    @org.springframework.web.bind.annotation.PatchMapping("/bookings/{id}/status")
+    ApiResponse<String> updateBookingStatus(
+            @org.springframework.web.bind.annotation.PathVariable String id,
+            @org.springframework.web.bind.annotation.RequestParam String status) {
+        bookingService.updateStatus(id, status);
+        ApiResponse<String> apiResponse = new ApiResponse<>();
+        apiResponse.setResult("Booking status updated successfully.");
+        return apiResponse;
+    }
+
+    @org.springframework.web.bind.annotation.GetMapping("/reviews")
+    ApiResponse<org.springframework.data.domain.Page<com.visita.dto.response.ReviewResponse>> getAllReviews(
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "1") int page,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "10") int size) {
+        ApiResponse<org.springframework.data.domain.Page<com.visita.dto.response.ReviewResponse>> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(reviewService.getAllReviews(page - 1, size));
+        return apiResponse;
+    }
+
+    @org.springframework.web.bind.annotation.PatchMapping("/reviews/{id}/visibility")
+    ApiResponse<String> updateReviewVisibility(
+            @org.springframework.web.bind.annotation.PathVariable String id,
+            @org.springframework.web.bind.annotation.RequestParam boolean isVisible) {
+        reviewService.toggleReviewVisibility(id, isVisible);
+        ApiResponse<String> apiResponse = new ApiResponse<>();
+        apiResponse.setResult("Review visibility updated successfully.");
         return apiResponse;
     }
 }

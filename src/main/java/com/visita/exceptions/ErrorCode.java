@@ -24,7 +24,11 @@ public enum ErrorCode {
 	END_DATE_AFTER_START_DATE(1012, "End date must be after start date", HttpStatus.BAD_REQUEST),
 	STAFF_ID_REQUIRED(1013, "Staff ID is required", HttpStatus.BAD_REQUEST),
 	USERNAME_INVALID(1014, "Username must be at least 3 characters", HttpStatus.BAD_REQUEST),
-	IMAGE_NOT_FOUND(1015, "Image not found", HttpStatus.NOT_FOUND);
+	IMAGE_NOT_FOUND(1015, "Image not found", HttpStatus.NOT_FOUND),
+	PROMOTION_EXPIRED(1016, "Promotion is expired or not yet started", HttpStatus.BAD_REQUEST),
+	PROMOTION_OUT_OF_STOCK(1017, "Promotion is out of stock", HttpStatus.BAD_REQUEST),
+	PROMOTION_INACTIVE(1018, "Promotion is inactive", HttpStatus.BAD_REQUEST),
+	TOUR_UNAVAILABLE(1019, "Tour is not available", HttpStatus.BAD_REQUEST);
 
 	private final int code;
 	private final String message;

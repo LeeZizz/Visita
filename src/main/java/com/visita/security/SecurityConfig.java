@@ -29,7 +29,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
 	private final String[] PUBLIC_POST_API = { "/users/create", "/auth/login", "/auth/introspect", "/auth/refresh",
-			"/auth/outbound/authentication", "/auth/logout" };
+			"/auth/outbound/authentication", "/auth/logout", "/api/payment/ipn-momo" };
 
 	private final String[] PUBLIC_GET_API = { "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
 			"/tours/**" };

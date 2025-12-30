@@ -8,4 +8,6 @@ import com.visita.entities.PromotionEntity;
 @Repository
 public interface PromotionRepository extends JpaRepository<PromotionEntity, String> {
     boolean existsByCode(String code);
+
+    java.util.Optional<PromotionEntity> findByCode(String code);
 }
