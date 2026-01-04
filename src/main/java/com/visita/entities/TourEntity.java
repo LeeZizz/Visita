@@ -91,4 +91,8 @@ public class TourEntity {
 	@com.fasterxml.jackson.annotation.JsonIgnore
 	@OneToMany(mappedBy = "tour", fetch = FetchType.LAZY)
 	private List<FavoriteEntity> favorites;
+
+	@Version
+	@Column(name = "version")
+	private Long version;
 }

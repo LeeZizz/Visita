@@ -4,8 +4,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.visita.dto.request.BookingRequest;
 import com.visita.dto.response.BookingResponse;
@@ -24,11 +26,16 @@ import com.visita.repositories.PromotionRepository;
 import com.visita.repositories.TourRepository;
 import com.visita.repositories.UserRepository;
 
+import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BookingService {
+
+    private static final int MAX_RETRY_ATTEMPTS = 3;
 
     private final BookingRepository bookingRepository;
     private final TourRepository tourRepository;
@@ -38,9 +45,35 @@ public class BookingService {
     private final com.visita.services.payment.MoMoService moMoService;
     private final com.visita.services.payment.PayPalService payPalService;
     private final com.visita.config.FrontendConfig frontendConfig;
+    private final TransactionTemplate transactionTemplate;
 
-    @Transactional
+    /**
+     * Creates a booking with retry logic for handling optimistic locking conflicts.
+     * If a concurrent update is detected (e.g., another user booked the last slot),
+     * the operation is retried with fresh data up to MAX_RETRY_ATTEMPTS times.
+     */
     public BookingResponse createBooking(BookingRequest request) {
+        for (int attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
+            try {
+                return transactionTemplate.execute(status -> doCreateBooking(request));
+            } catch (OptimisticLockException | ObjectOptimisticLockingFailureException e) {
+                log.warn("Optimistic lock conflict on booking attempt {}/{}: {}",
+                        attempt, MAX_RETRY_ATTEMPTS, e.getMessage());
+                if (attempt == MAX_RETRY_ATTEMPTS) {
+                    throw new WebException(ErrorCode.CONCURRENT_UPDATE);
+                }
+                // Continue to next retry attempt with fresh data
+            }
+        }
+        // Should never reach here, but compiler needs this
+        throw new WebException(ErrorCode.CONCURRENT_UPDATE);
+    }
+
+    /**
+     * Internal method containing the actual booking creation logic.
+     * Called within a transaction by the retry wrapper.
+     */
+    private BookingResponse doCreateBooking(BookingRequest request) {
         // 1. Get Current User
         var context = org.springframework.security.core.context.SecurityContextHolder.getContext();
         String username = context.getAuthentication().getName();
@@ -171,8 +204,29 @@ public class BookingService {
                 .build();
     }
 
-    @Transactional
+    /**
+     * Creates a booking for a user (staff workflow) with retry logic for handling
+     * optimistic locking conflicts.
+     */
     public BookingResponse createBookingForUser(com.visita.dto.request.StaffBookingRequest request) {
+        for (int attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
+            try {
+                return transactionTemplate.execute(status -> doCreateBookingForUser(request));
+            } catch (OptimisticLockException | ObjectOptimisticLockingFailureException e) {
+                log.warn("Optimistic lock conflict on staff booking attempt {}/{}: {}",
+                        attempt, MAX_RETRY_ATTEMPTS, e.getMessage());
+                if (attempt == MAX_RETRY_ATTEMPTS) {
+                    throw new WebException(ErrorCode.CONCURRENT_UPDATE);
+                }
+            }
+        }
+        throw new WebException(ErrorCode.CONCURRENT_UPDATE);
+    }
+
+    /**
+     * Internal method containing the actual staff booking creation logic.
+     */
+    private BookingResponse doCreateBookingForUser(com.visita.dto.request.StaffBookingRequest request) {
         // 1. Get User
         com.visita.entities.UserEntity user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new WebException(ErrorCode.USER_NOT_FOUND));
