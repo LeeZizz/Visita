@@ -1,6 +1,5 @@
 package com.visita.entities;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
@@ -39,8 +38,8 @@ public class ChatMessageEntity {
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
+	@PrePersist
+	protected void onCreate() {
+		this.createdAt = LocalDateTime.now();
+	}
 }

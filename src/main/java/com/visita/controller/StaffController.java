@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.visita.dto.response.ApiResponse;
 import com.visita.dto.response.BookingDetailResponse;
-import com.visita.entities.TourEntity;
 import com.visita.services.BookingService;
 import com.visita.services.TourService;
 
