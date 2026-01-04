@@ -15,17 +15,16 @@ public class TourSpecification {
 
     public static Specification<TourEntity> filterTours(
             String title,
-            String destination, // New: Filter by destination (like "Ha Long")
+            String destination,
             TourCategory category,
-            com.visita.enums.Region region, // New: Filter by Region
+            com.visita.enums.Region region,
             BigDecimal minPrice,
             BigDecimal maxPrice,
             LocalDate startDateFrom,
-            LocalDate endDateTo, // Limits the START date (tours MUST start before this date)
-            LocalDate endDateLimit, // New: Limits the END date (tours MUST finish before this date)
+            LocalDate endDateTo,
+            LocalDate endDateLimit,
             Double minRating,
-            Integer minCapacity // New: Minimum available capacity (simple check against total capacity for now)
-    ) {
+            Integer minCapacity) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -63,15 +62,6 @@ public class TourSpecification {
             }
 
             // Date Range
-            // If user selects a date range, we usually want to find tours that start ON or
-            // AFTER the user's start date
-            // and optionally end BEFORE the user's end date.
-            // Or, simply overlap.
-            // Let's assume standard "Search for tours occuring in this timeframe".
-            // Implementation: Tour Start Date >= Input Start Date (if provided)
-            // Tour Start Date <= Input End Date (if provided) - effectively limiting start
-            // window
-            // The user said "thời gian" (Time). Usually means Start Date.
             if (startDateFrom != null) {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("startDate"), startDateFrom));
             }
@@ -84,7 +74,7 @@ public class TourSpecification {
             }
 
             // Min Capacity (Check if tour has at least X total capacity)
-            // Note: This does not check LIVE availability (bookings), just total capacity.
+            // Filter by minimum capacity
             if (minCapacity != null) {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("capacity"), minCapacity));
             }
@@ -97,9 +87,7 @@ public class TourSpecification {
                 avgRatingSubquery.select(criteriaBuilder.avg(reviewRoot.get("rating").as(Double.class)));
                 avgRatingSubquery.where(criteriaBuilder.equal(reviewRoot.get("tour"), root));
 
-                // We want tours where (avgRating >= minRating)
-                // Note: If no reviews, avg is usually null. We should decide if null rating
-                // counts. Usually not.
+                // Filter tours where average rating >= minRating
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(avgRatingSubquery, minRating));
             }
 

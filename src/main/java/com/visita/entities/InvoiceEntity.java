@@ -38,7 +38,6 @@ public class InvoiceEntity {
 	@PrePersist
 	protected void onCreate() {
 		this.issuedDate = LocalDate.now();
-		// Copy totalPrice from Booking to ensure data integrity
 		if (this.booking != null && this.booking.getTotalPrice() != null) {
 			this.amount = this.booking.getTotalPrice();
 		}

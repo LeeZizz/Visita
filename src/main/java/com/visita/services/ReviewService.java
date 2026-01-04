@@ -41,20 +41,10 @@ public class ReviewService {
                 .orElseThrow(() -> new WebException(ErrorCode.TOUR_NOT_FOUND));
 
         // 1. Check if User has gone on the Tour (Status = CONFIRMED)
-        // Note: User request said "status là CONFIRMED" and "đã đi tour" (typically
-        // means tour date passed or completed).
-        // But strictly checking CONFIRMED as requested. Ideally "COMPLETED" is better
-        // for "has gone", BUT
-        // user requirement explicitly mentioned "CONFIRMED". I will stick to
-        // "CONFIRMED".
         boolean hasConfirmedBooking = bookingRepository.existsByUser_UsernameAndTour_TourIdAndStatus(
                 username, request.getTourId(), BookingStatus.CONFIRMED);
 
         if (!hasConfirmedBooking) {
-            // Also check COMPLETED just in case? Or strictly CONFIRMED?
-            // "status là CONFIRMED" usually implies strictly that.
-            // But usually you review AFTER the tour (COMPLETED).
-            // Let's assume CONFIRMED is the requirement.
             throw new RuntimeException("You can only review tours you have booked and are CONFIRMED.");
         }
 
@@ -95,7 +85,7 @@ public class ReviewService {
 
     public void toggleReviewVisibility(String reviewId, boolean isVisible) {
         ReviewEntity review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new WebException(ErrorCode.UNKNOWN_ERROR)); // Should be REVIEW_NOT_FOUND
+                .orElseThrow(() -> new WebException(ErrorCode.UNKNOWN_ERROR));
         review.setIsVisible(isVisible);
         reviewRepository.save(review);
     }

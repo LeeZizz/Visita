@@ -85,27 +85,7 @@ public class AuthenticationService {
 					.id(jit).expiryTime(expiryTime).build();
 			invalidatedTokenRepository.save(invalidatedToken);
 
-			// Revoke Refresh Token if it matches the current user context (optional, or
-			// separate endpoint)
-			// But traditionally logout invalidates the refresh token too.
-			// Since we don't get the refresh token in logout request usually, we might rely
-			// on the client to forget it,
-			// OR if the access token allows us to find the user, we could revoke ALL
-			// refresh tokens for that user.
-			// Ideally, logout endpoint should accept refresh token to revoke it
-			// specifically.
-			// For now, let's keep it simple: access token blacklist.
-			// Note: The user requested "Revoke Refresh Token on Logout".
-			// If the client sends the refresh token in the body, we can delete it.
-			// Creating a new DTO for Logout might be needed if we want to support revoking
-			// specific refresh token.
-			// Given current signature: LogoutRequest only has 'token' (Access Token).
-			// We can find the user from Access Token and delete all their refresh tokens?
-			// Or just leave it as is for now and let the user clarify if they want full
-			// revocation.
-			// EDIT: I will try to find the user from the access token and delete all
-			// refresh tokens for now,
-			// as that's a safe "logout everywhere" or "safe logout" interpretation.
+			// Attempt to find user and revoke refresh tokens for security
 
 			String username = signToken.getJWTClaimsSet().getSubject();
 			userRepository.findByUsername(username).or(() -> userRepository.findByEmail(username)).ifPresent(user -> {

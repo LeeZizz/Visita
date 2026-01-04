@@ -36,7 +36,6 @@ public class PaymentController {
     public ResponseEntity<?> capturePayPal(
             @org.springframework.web.bind.annotation.RequestParam("token") String token) {
         try {
-            // Token in redirect is usually orderID or token
             com.visita.dto.response.PayPalPaymentResponse response = paymentService.capturePayPalOrder(token);
             return ResponseEntity.ok(response);
         } catch (Exception e) {

@@ -162,12 +162,6 @@ public class DashboardService {
                 .userId(payment.getBooking().getUser().getUserId())
                 .userName(payment.getBooking().getUser().getFullName())
                 .userEmail(payment.getBooking().getUser().getEmail())
-                // .userAvatar(payment.getBooking().getUser().getAvatar()) // Assuming avatar
-                // exists?
-                // User entity might not have avatar field visible immediately, checking
-                // required.
-                // Assuming it might not be there, I'll skip or use placeholder if needed.
-                // User requested "avatar". Let's check UserEntity later.
                 .amount(payment.getAmount())
                 .paymentDate(payment.getPaymentDate())
                 .status(payment.getStatus().name())

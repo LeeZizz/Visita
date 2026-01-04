@@ -30,7 +30,7 @@ public class TourService {
 
         TourEntity tour = TourEntity.builder()
                 .title(request.getTitle())
-                .staff(staff) // Assign staff
+                .staff(staff)
                 .description(request.getDescription())
                 .itinerary(request.getItinerary())
                 .priceAdult(request.getPriceAdult())
@@ -40,8 +40,8 @@ public class TourService {
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .capacity(request.getCapacity())
-                .category(request.getCategory()) // Map category
-                .region(request.getRegion()) // Map region
+                .category(request.getCategory())
+                .region(request.getRegion())
                 .availability(request.getAvailability() != null ? request.getAvailability() : 1)
                 .build();
 
@@ -104,8 +104,8 @@ public class TourService {
             java.math.BigDecimal minPrice,
             java.math.BigDecimal maxPrice,
             java.time.LocalDate startDateFrom,
-            java.time.LocalDate endDateTo, // Start Date limit
-            java.time.LocalDate endDateLimit, // End Date limit
+            java.time.LocalDate endDateTo,
+            java.time.LocalDate endDateLimit,
             Double minRating,
             Integer numAdults,
             Integer numChildren,

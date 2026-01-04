@@ -19,6 +19,6 @@ import lombok.NoArgsConstructor;
 public class InvalidatedToken {
 
     @Id
-    private String id; // This will hold the JTI (JWT ID)
+    private String id; // Hold JTI (JWT ID)
     private Date expiryTime;
 }
