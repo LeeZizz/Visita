@@ -12,9 +12,14 @@ import com.visita.dto.response.ApiResponse;
 import jakarta.persistence.OptimisticLockException;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Value;
+
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+	@Value("${spring.profiles.active:dev}")
+	private String activeProfile;
 
 	@ExceptionHandler(value = { OptimisticLockException.class, ObjectOptimisticLockingFailureException.class })
 	ResponseEntity<ApiResponse<?>> handleOptimisticLockException(Exception exception) {
@@ -31,7 +36,15 @@ public class GlobalExceptionHandler {
 		ApiResponse<?> apiResponse = new ApiResponse<>();
 		log.error("Unhandled exception: ", exception);
 		apiResponse.setCode(ErrorCode.UNKNOWN_ERROR.getCode());
-		apiResponse.setMessage(ErrorCode.UNKNOWN_ERROR.getMessage() + ": " + exception.getMessage());
+
+		// Only show detailed error messages in development for debugging
+		// In production, hide internal details to prevent information leakage
+		if ("dev".equals(activeProfile)) {
+			apiResponse.setMessage(ErrorCode.UNKNOWN_ERROR.getMessage() + ": " + exception.getMessage());
+		} else {
+			apiResponse.setMessage(ErrorCode.UNKNOWN_ERROR.getMessage());
+		}
+
 		return ResponseEntity.badRequest().body(apiResponse);
 	}
 
