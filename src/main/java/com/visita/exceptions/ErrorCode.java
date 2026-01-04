@@ -29,7 +29,8 @@ public enum ErrorCode {
 	PROMOTION_OUT_OF_STOCK(1017, "Promotion is out of stock", HttpStatus.BAD_REQUEST),
 	PROMOTION_INACTIVE(1018, "Promotion is inactive", HttpStatus.BAD_REQUEST),
 	TOUR_UNAVAILABLE(1019, "Tour is not available", HttpStatus.BAD_REQUEST),
-	PROMOTION_UNAVAILABLE(1020, "Promotion is unavailable", HttpStatus.BAD_REQUEST);
+	PROMOTION_UNAVAILABLE(1020, "Promotion is unavailable", HttpStatus.BAD_REQUEST),
+	CONCURRENT_UPDATE(1021, "Data was modified by another user. Please try again.", HttpStatus.CONFLICT);
 
 	private final int code;
 	private final String message;
