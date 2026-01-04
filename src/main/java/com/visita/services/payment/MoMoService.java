@@ -92,7 +92,8 @@ public class MoMoService {
 
             HttpEntity<Map<String, String>> request = new HttpEntity<>(map, headers);
 
-            log.info("Sending request to MoMo: {}", map);
+            log.info("Sending MoMo payment request - orderId: {}, amount: {}, requestType: {}",
+                    uniqueOrderId, amountStr, requestType);
 
             MoMoPaymentResponse response = restTemplate.postForObject(endpoint, request, MoMoPaymentResponse.class);
 
