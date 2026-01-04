@@ -39,6 +39,9 @@ public class SecurityConfig {
 	@org.springframework.beans.factory.annotation.Autowired
 	private com.visita.repositories.InvalidatedTokenRepository invalidatedTokenRepository;
 
+	@org.springframework.beans.factory.annotation.Autowired
+	private com.visita.config.FrontendConfig frontendConfig;
+
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
 		httpSecurity.authorizeHttpRequests(request -> request
@@ -68,7 +71,7 @@ public class SecurityConfig {
 	@Bean
 	CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+		configuration.setAllowedOrigins(frontendConfig.getAllowedOriginsList());
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 		configuration.setAllowedHeaders(List.of("*"));
 		configuration.setAllowCredentials(true);
