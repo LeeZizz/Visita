@@ -37,6 +37,7 @@ public class BookingService {
     private final PromotionRepository promotionRepository;
     private final com.visita.services.payment.MoMoService moMoService;
     private final com.visita.services.payment.PayPalService payPalService;
+    private final com.visita.config.FrontendConfig frontendConfig;
 
     @Transactional
     public BookingResponse createBooking(BookingRequest request) {
@@ -144,8 +145,8 @@ public class BookingService {
                     finalPrice);
             message = "Please pay via MoMo.";
         } else if (request.getPaymentMethod() == PaymentMethod.PAYPAL) {
-            String returnUrl = "http://localhost:5173/payment/paypal-success"; // Frontend URL
-            String cancelUrl = "http://localhost:5173/payment/paypal-cancel";
+            String returnUrl = frontendConfig.getUrl() + "/payment/paypal-success";
+            String cancelUrl = frontendConfig.getUrl() + "/payment/paypal-cancel";
             com.visita.dto.response.PayPalPaymentResponse payPalResponse = payPalService.createPayment(finalPrice,
                     "USD", returnUrl, cancelUrl);
             paymentUrl = payPalResponse.getApproveLink();
