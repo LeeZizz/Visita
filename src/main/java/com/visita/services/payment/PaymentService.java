@@ -23,6 +23,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final BookingRepository bookingRepository; // Need this to update booking status
     private final PayPalService payPalService;
+    private final MoMoService moMoService;
 
     @Transactional
     public com.visita.dto.response.PayPalPaymentResponse capturePayPalOrder(String orderId) {
@@ -46,8 +47,11 @@ public class PaymentService {
     public void processMoMoIPN(MoMoIPNRequest request) {
         log.info("Processing MoMo IPN: {}", request);
 
-        // 1. Verify Signature (Skip for now or implement if keys are available here)
-        // In a real app, you MUST verify the signature from MoMo using your Secret Key.
+        // 1. Verify Signature
+        if (!moMoService.verifyIpnSignature(request)) {
+            log.error("Invalid MoMo IPN signature for OrderId: {}", request.getOrderId());
+            throw new WebException(ErrorCode.UNAUTHORIZED);
+        }
 
         // 2. Check Result Code
         if (request.getResultCode() != 0) {

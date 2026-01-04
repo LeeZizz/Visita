@@ -120,4 +120,42 @@ public class MoMoService {
         }
         return sb.toString();
     }
+
+    /**
+     * Verifies the signature of a MoMo IPN request.
+     * Raw signature format per MoMo docs:
+     * accessKey=$accessKey&amount=$amount&extraData=$extraData&message=$message&orderId=$orderId
+     * &orderInfo=$orderInfo&orderType=$orderType&partnerCode=$partnerCode&payType=$payType
+     * &requestId=$requestId&responseTime=$responseTime&resultCode=$resultCode&transId=$transId
+     */
+    public boolean verifyIpnSignature(com.visita.dto.request.MoMoIPNRequest request) {
+        try {
+            String rawSignature = "accessKey=" + accessKey +
+                    "&amount=" + request.getAmount() +
+                    "&extraData=" + (request.getExtraData() != null ? request.getExtraData() : "") +
+                    "&message=" + (request.getMessage() != null ? request.getMessage() : "") +
+                    "&orderId=" + request.getOrderId() +
+                    "&orderInfo=" + (request.getOrderInfo() != null ? request.getOrderInfo() : "") +
+                    "&orderType=" + (request.getOrderType() != null ? request.getOrderType() : "") +
+                    "&partnerCode=" + request.getPartnerCode() +
+                    "&payType=" + (request.getPayType() != null ? request.getPayType() : "") +
+                    "&requestId=" + request.getRequestId() +
+                    "&responseTime=" + request.getResponseTime() +
+                    "&resultCode=" + request.getResultCode() +
+                    "&transId=" + request.getTransId();
+
+            String computedSignature = hmacSHA256(rawSignature, secretKey);
+            boolean isValid = computedSignature.equals(request.getSignature());
+
+            if (!isValid) {
+                log.warn("Invalid MoMo IPN signature. Expected: {}, Got: {}", computedSignature,
+                        request.getSignature());
+            }
+
+            return isValid;
+        } catch (Exception e) {
+            log.error("Error verifying MoMo IPN signature", e);
+            return false;
+        }
+    }
 }
