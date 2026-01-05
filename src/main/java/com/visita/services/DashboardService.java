@@ -1,11 +1,14 @@
 package com.visita.services;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -15,6 +18,7 @@ import com.visita.dto.response.DashboardStatsResponse;
 import com.visita.dto.response.TransactionResponse;
 import com.visita.entities.PaymentEntity;
 import com.visita.entities.PaymentStatus;
+import com.visita.enums.TimeGranularity;
 import com.visita.repositories.BookingRepository;
 import com.visita.repositories.PaymentRepository;
 import com.visita.repositories.UserRepository;
@@ -24,6 +28,9 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class DashboardService {
+
+    private static final DateTimeFormatter DAY_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("MM/yyyy");
 
     private final PaymentRepository paymentRepository;
     private final UserRepository userRepository;
@@ -72,52 +79,74 @@ public class DashboardService {
                 .build();
     }
 
-    public List<ChartDataResponse> getChartData() {
-        // Revenue Chart (Last 12 months)
-        List<ChartDataResponse> data = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-        for (int i = 11; i >= 0; i--) {
-            LocalDateTime start = now.minusMonths(i).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
-            LocalDateTime end = start.plusMonths(1).minusSeconds(1);
-
+    public List<ChartDataResponse> getChartData(LocalDate startDate, LocalDate endDate, TimeGranularity granularity) {
+        return generateChartData(startDate, endDate, granularity, (start, end) -> {
             BigDecimal revenue = paymentRepository.sumAmountByStatusAndPaymentDateBetween(
                     PaymentStatus.SUCCESS, start, end);
-            if (revenue == null)
-                revenue = BigDecimal.ZERO;
-
-            String label = YearMonth.from(start).format(DateTimeFormatter.ofPattern("MM/yyyy"));
-            data.add(ChartDataResponse.builder().label(label).value(revenue).build());
-        }
-        return data;
+            return revenue != null ? revenue : BigDecimal.ZERO;
+        });
     }
 
-    public List<ChartDataResponse> getUserChartData() {
-        List<ChartDataResponse> data = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-        for (int i = 11; i >= 0; i--) {
-            LocalDateTime start = now.minusMonths(i).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
-            LocalDateTime end = start.plusMonths(1).minusSeconds(1);
-
-            long count = userRepository.countByCreatedAtBetween(start, end);
-
-            String label = YearMonth.from(start).format(DateTimeFormatter.ofPattern("MM/yyyy"));
-            data.add(ChartDataResponse.builder().label(label).value(BigDecimal.valueOf(count)).build());
-        }
-        return data;
+    public List<ChartDataResponse> getUserChartData(LocalDate startDate, LocalDate endDate,
+            TimeGranularity granularity) {
+        return generateChartData(startDate, endDate, granularity,
+                (start, end) -> BigDecimal.valueOf(userRepository.countByCreatedAtBetween(start, end)));
     }
 
-    public List<ChartDataResponse> getBookingChartData() {
-        List<ChartDataResponse> data = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-        for (int i = 11; i >= 0; i--) {
-            LocalDateTime start = now.minusMonths(i).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
-            LocalDateTime end = start.plusMonths(1).minusSeconds(1);
+    public List<ChartDataResponse> getBookingChartData(LocalDate startDate, LocalDate endDate,
+            TimeGranularity granularity) {
+        return generateChartData(startDate, endDate, granularity,
+                (start, end) -> BigDecimal.valueOf(bookingRepository.countByBookingDateBetween(start, end)));
+    }
 
-            long count = bookingRepository.countByBookingDateBetween(start, end);
+    private List<ChartDataResponse> generateChartData(
+            LocalDate startDate,
+            LocalDate endDate,
+            TimeGranularity granularity,
+            BiFunction<LocalDateTime, LocalDateTime, BigDecimal> dataFetcher) {
 
-            String label = YearMonth.from(start).format(DateTimeFormatter.ofPattern("MM/yyyy"));
-            data.add(ChartDataResponse.builder().label(label).value(BigDecimal.valueOf(count)).build());
+        // Defaults: last 12 months, MONTH granularity (backward compatible)
+        if (granularity == null) {
+            granularity = TimeGranularity.MONTH;
         }
+        LocalDate now = LocalDate.now();
+        if (endDate == null) {
+            endDate = now;
+        }
+        if (startDate == null) {
+            startDate = (granularity == TimeGranularity.MONTH)
+                    ? now.minusMonths(11).withDayOfMonth(1)
+                    : now.minusDays(6);
+        }
+
+        List<ChartDataResponse> data = new ArrayList<>();
+
+        if (granularity == TimeGranularity.DAY) {
+            long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
+            for (long i = 0; i <= daysBetween; i++) {
+                LocalDate current = startDate.plusDays(i);
+                LocalDateTime start = current.atStartOfDay();
+                LocalDateTime end = current.plusDays(1).atStartOfDay().minusSeconds(1);
+
+                BigDecimal value = dataFetcher.apply(start, end);
+                String label = current.format(DAY_FORMATTER);
+                data.add(ChartDataResponse.builder().label(label).value(value).build());
+            }
+        } else {
+            YearMonth startMonth = YearMonth.from(startDate);
+            YearMonth endMonth = YearMonth.from(endDate);
+            long monthsBetween = ChronoUnit.MONTHS.between(startMonth, endMonth);
+            for (long i = 0; i <= monthsBetween; i++) {
+                YearMonth current = startMonth.plusMonths(i);
+                LocalDateTime start = current.atDay(1).atStartOfDay();
+                LocalDateTime end = current.atEndOfMonth().plusDays(1).atStartOfDay().minusSeconds(1);
+
+                BigDecimal value = dataFetcher.apply(start, end);
+                String label = current.format(MONTH_FORMATTER);
+                data.add(ChartDataResponse.builder().label(label).value(value).build());
+            }
+        }
+
         return data;
     }
 
