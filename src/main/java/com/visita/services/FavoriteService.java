@@ -25,8 +25,9 @@ public class FavoriteService {
     private final UserRepository userRepository;
 
     private UserEntity getCurrentUser() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByUsername(username)
+        String name = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByUsername(name)
+                .or(() -> userRepository.findByEmail(name))
                 .orElseThrow(() -> new WebException(ErrorCode.USER_NOT_FOUND));
     }
 

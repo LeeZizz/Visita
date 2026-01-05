@@ -30,6 +30,7 @@ public class AdminService {
 
         // Admin is now a User with ADMIN role
         UserEntity userEntity = userRepository.findByUsername(username)
+                .or(() -> userRepository.findByEmail(username))
                 .orElseThrow(() -> new WebException(ErrorCode.USER_NOT_FOUND));
 
         return mapToAdminResponse(userEntity);

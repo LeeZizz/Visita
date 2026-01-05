@@ -32,8 +32,9 @@ public class ReviewService {
 
     @Transactional
     public ReviewResponse createReview(ReviewRequest request) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity user = userRepository.findByUsername(username)
+        String name = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity user = userRepository.findByUsername(name)
+                .or(() -> userRepository.findByEmail(name))
                 .orElseThrow(() -> new WebException(ErrorCode.USER_NOT_FOUND));
 
         // 1. Look up the booking
@@ -41,7 +42,7 @@ public class ReviewService {
                 .orElseThrow(() -> new WebException(ErrorCode.BOOKING_NOT_FOUND));
 
         // 2. Validate booking belongs to the current user
-        if (!booking.getUser().getUsername().equals(username)) {
+        if (!booking.getUser().getUserId().equals(user.getUserId())) {
             throw new RuntimeException("You can only review your own bookings.");
         }
 
