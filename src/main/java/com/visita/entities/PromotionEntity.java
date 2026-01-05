@@ -41,6 +41,7 @@ public class PromotionEntity {
 	@Column(name = "end_date")
 	private LocalDate endDate;
 
+	@Column(name = "quantity")
 	private Integer quantity;
 
 	@Column(name = "is_active", nullable = false)

@@ -31,6 +31,8 @@ public class ReviewEntity {
 	@com.fasterxml.jackson.annotation.JsonBackReference("user-reviews")
 	private UserEntity user;
 
+	@jakarta.validation.constraints.Min(value = 1, message = "Rating must be at least 1")
+	@jakarta.validation.constraints.Max(value = 5, message = "Rating must be at most 5")
 	private Integer rating; // 1–5
 
 	@Lob
