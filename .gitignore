@@ -37,3 +37,10 @@ build/
 
 ### Environment Variables ###
 .env
+
+### Python (ai-service) ###
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.venv/
