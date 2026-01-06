@@ -5,7 +5,10 @@ import re
 from google import genai
 from config import Config
 from chatbot.prompts import SYSTEM_PROMPT, build_context_prompt
-from database.queries import get_tours_summary, search_tours, get_booking_by_id, get_payment_status
+from database.queries import (
+    get_tours_summary, search_tours, get_booking_by_id, get_payment_status,
+    get_bookings_by_email, get_bookings_by_phone, get_payments_by_email
+)
 
 
 # Initialize Gemini client
@@ -20,23 +23,35 @@ def detect_intent(message):
     """
     message_lower = message.lower()
     
-    # Booking lookup intent
-    booking_match = re.search(r'(booking|đặt|mã đơn|đơn hàng|mã booking)[:\s]*([a-zA-Z0-9-]+)', message, re.IGNORECASE)
-    if booking_match or 'booking' in message_lower or 'đơn hàng' in message_lower or 'mã đơn' in message_lower:
-        # Try to extract booking ID
-        uuid_match = re.search(r'[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}', message, re.IGNORECASE)
-        if uuid_match:
-            return ('booking_lookup', {'booking_id': uuid_match.group()})
-        return ('booking_lookup', {})
+    # 1. Email lookup (Highest priority if email is present)
+    email_match = re.search(r'[\w\.-]+@[\w\.-]+\.\w+', message)
+    if email_match:
+        email = email_match.group()
+        # Check context keywords
+        if any(kw in message_lower for kw in ['thanh toán', 'payment', 'tiền', 'hóa đơn']):
+             return ('payment_lookup_by_email', {'email': email})
+        return ('booking_lookup_by_email', {'email': email})
+
+    # 2. Phone lookup
+    phone_match = re.search(r'(0[3|5|7|8|9])+([0-9]{8})\b', message) # Simple regex for VN phone
+    if not phone_match:
+         # Try simpler 10-digit number if user omits leading zero or format is different
+         phone_match = re.search(r'\b\d{10}\b', message)
+         
+    if phone_match:
+        phone = phone_match.group()
+        return ('booking_lookup_by_phone', {'phone': phone})
+
+    # 3. Booking ID lookup (UUID)
+    # Try to extract booking ID (UUID format)
+    uuid_match = re.search(r'[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}', message, re.IGNORECASE)
+    if uuid_match:
+        booking_id = uuid_match.group()
+        if any(kw in message_lower for kw in ['thanh toán', 'payment', 'trả tiền']):
+            return ('payment_status', {'booking_id': booking_id})
+        return ('booking_lookup', {'booking_id': booking_id})
     
-    # Payment status intent
-    if 'thanh toán' in message_lower or 'payment' in message_lower or 'trả tiền' in message_lower:
-        uuid_match = re.search(r'[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}', message, re.IGNORECASE)
-        if uuid_match:
-            return ('payment_status', {'booking_id': uuid_match.group()})
-        return ('payment_status', {})
-    
-    # Tour search intent
+    # 4. Tour search intent
     destinations = ['đà nẵng', 'hà nội', 'hồ chí minh', 'sài gòn', 'phú quốc', 'nha trang', 
                    'đà lạt', 'huế', 'hội an', 'sapa', 'hạ long', 'quy nhơn', 'phan thiết']
     
@@ -44,7 +59,7 @@ def detect_intent(message):
         if dest in message_lower:
             return ('tour_search', {'destination': dest})
     
-    # General tour listing
+    # 5. General tour listing
     if any(kw in message_lower for kw in ['tour', 'du lịch', 'chuyến đi', 'điểm đến', 'xem tour', 'có tour']):
         return ('tour_list', {})
     
@@ -65,7 +80,21 @@ def get_context_data(intent, params):
         booking_id = params.get('booking_id')
         if booking_id:
             return {'booking_data': get_booking_by_id(booking_id)}
-        return None
+    
+    elif intent == 'booking_lookup_by_email':
+        email = params.get('email')
+        if email:
+            return {'booking_data': get_bookings_by_email(email)}
+            
+    elif intent == 'booking_lookup_by_phone':
+        phone = params.get('phone')
+        if phone:
+            return {'booking_data': get_bookings_by_phone(phone)}
+
+    elif intent == 'payment_lookup_by_email':
+        email = params.get('email')
+        if email:
+            return {'payment_data': get_payments_by_email(email)}
     
     elif intent == 'payment_status':
         booking_id = params.get('booking_id')
@@ -74,7 +103,6 @@ def get_context_data(intent, params):
                 'booking_data': get_booking_by_id(booking_id),
                 'payment_data': get_payment_status(booking_id)
             }
-        return None
     
     return None
 

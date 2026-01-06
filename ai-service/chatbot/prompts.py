@@ -20,7 +20,7 @@ SYSTEM_PROMPT = """Bạn là trợ lý du lịch AI của Visita - nền tảng 
 
 ## Khả năng:
 - Tìm kiếm tour theo điểm đến, giá, thời gian
-- Tra cứu thông tin booking (cần mã booking)
+- Tra cứu thông tin booking qua Mã booking (UUID), Email hoặc Số điện thoại
 - Kiểm tra trạng thái thanh toán
 - Gợi ý tour phù hợp
 

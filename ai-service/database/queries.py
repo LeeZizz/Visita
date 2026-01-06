@@ -101,6 +101,97 @@ def get_booking_by_id(booking_id):
         return None
 
 
+def get_bookings_by_email(email, limit=5):
+    """Get bookings by user email."""
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            query = """
+                SELECT b.booking_id, b.booking_date, b.num_adults, b.num_children,
+                       b.total_price, b.status, b.special_request,
+                       t.title as tour_title, t.destination, t.start_date, t.end_date,
+                       u.full_name, u.email
+                FROM bookings b
+                JOIN tours t ON b.tour_id = t.tour_id
+                JOIN users u ON b.user_id = u.user_id
+                WHERE u.email = %s
+                ORDER BY b.booking_date DESC
+                LIMIT %s
+            """
+            cursor.execute(query, (email, limit))
+            bookings = cursor.fetchall()
+        conn.close()
+        
+        if bookings:
+            return format_bookings_list_for_display(bookings)
+        return None
+    except Exception as e:
+        print(f"Error getting bookings by email: {e}")
+        return None
+
+
+def get_bookings_by_phone(phone, limit=5):
+    """Get bookings by user phone number."""
+    try:
+        # Normalize phone number (remove spaces, dashes)
+        phone_clean = phone.replace(" ", "").replace("-", "").replace(".", "")
+        
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            query = """
+                SELECT b.booking_id, b.booking_date, b.num_adults, b.num_children,
+                       b.total_price, b.status, b.special_request,
+                       t.title as tour_title, t.destination, t.start_date, t.end_date,
+                       u.full_name, u.phone
+                FROM bookings b
+                JOIN tours t ON b.tour_id = t.tour_id
+                JOIN users u ON b.user_id = u.user_id
+                WHERE REPLACE(REPLACE(u.phone, ' ', ''), '-', '') LIKE %s
+                ORDER BY b.booking_date DESC
+                LIMIT %s
+            """
+            cursor.execute(query, (f"%{phone_clean[-9:]}%", limit))  # Match last 9 digits
+            bookings = cursor.fetchall()
+        conn.close()
+        
+        if bookings:
+            return format_bookings_list_for_display(bookings)
+        return None
+    except Exception as e:
+        print(f"Error getting bookings by phone: {e}")
+        return None
+
+
+def get_payments_by_email(email):
+    """Get payment status for all bookings by user email."""
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            query = """
+                SELECT p.payment_id, p.amount, p.payment_method, 
+                       p.payment_date, p.status as payment_status, p.transaction_id,
+                       b.booking_id, b.status as booking_status,
+                       t.title as tour_title
+                FROM payments p
+                JOIN bookings b ON p.booking_id = b.booking_id
+                JOIN tours t ON b.tour_id = t.tour_id
+                JOIN users u ON b.user_id = u.user_id
+                WHERE u.email = %s
+                ORDER BY p.payment_date DESC
+                LIMIT 5
+            """
+            cursor.execute(query, (email,))
+            payments = cursor.fetchall()
+        conn.close()
+        
+        if payments:
+            return format_payments_with_tour_for_display(payments)
+        return None
+    except Exception as e:
+        print(f"Error getting payments by email: {e}")
+        return None
+
+
 def get_payment_status(booking_id):
     """Get payment status for a booking."""
     try:
@@ -186,6 +277,63 @@ def format_payments_for_display(payments):
             f"• Thanh toán #{p['payment_id'][:8]}...\n"
             f"  Số tiền: {amount} | Phương thức: {p['payment_method'] or 'N/A'}\n"
             f"  Trạng thái: {status} | Ngày: {p['payment_date']}"
+        )
+    
+    return "\n".join(lines)
+
+
+def format_bookings_list_for_display(bookings):
+    """Format multiple bookings for AI context."""
+    status_map = {
+        'PENDING': 'Chờ xác nhận',
+        'CONFIRMED': 'Đã xác nhận',
+        'CANCELLED': 'Đã hủy',
+        'COMPLETED': 'Hoàn thành'
+    }
+    
+    if not bookings:
+        return "Không tìm thấy đơn đặt tour nào."
+    
+    user_name = bookings[0].get('full_name', 'Khách hàng')
+    lines = [f"Danh sách đặt tour của {user_name}:\n"]
+    
+    for b in bookings:
+        status = status_map.get(b['status'], b['status'])
+        total = f"{b['total_price']:,.0f}₫" if b['total_price'] else "N/A"
+        
+        lines.append(
+            f"📌 {b['tour_title']} ({b['destination']})\n"
+            f"   Mã: {b['booking_id'][:8]}... | Trạng thái: {status}\n"
+            f"   Ngày đặt: {b['booking_date']} | Tổng tiền: {total}\n"
+            f"   Số khách: {b['num_adults']} người lớn, {b['num_children'] or 0} trẻ em"
+        )
+    
+    return "\n".join(lines)
+
+
+def format_payments_with_tour_for_display(payments):
+    """Format payments with tour info for AI context."""
+    payment_status_map = {
+        'PENDING': 'Chờ thanh toán',
+        'SUCCESS': 'Thành công',
+        'FAILED': 'Thất bại',
+        'REFUNDED': 'Đã hoàn tiền'
+    }
+    
+    if not payments:
+        return "Không tìm thấy thông tin thanh toán nào."
+    
+    lines = ["Thông tin thanh toán:\n"]
+    
+    for p in payments:
+        status = payment_status_map.get(p['payment_status'], p['payment_status'])
+        amount = f"{p['amount']:,.0f}₫" if p['amount'] else "N/A"
+        
+        lines.append(
+            f"💳 {p['tour_title']}\n"
+            f"   Mã booking: {p['booking_id'][:8]}...\n"
+            f"   Số tiền: {amount} | Phương thức: {p['payment_method'] or 'N/A'}\n"
+            f"   Trạng thái: {status} | Ngày: {p['payment_date']}"
         )
     
     return "\n".join(lines)
