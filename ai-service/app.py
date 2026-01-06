@@ -17,7 +17,7 @@ tours_data = None
 def get_db_connection():
     return pymysql.connect(
         host=Config.DB_HOST,
-        user=Config.DB_USER,
+        user=Config.DB_USERNAME,
         password=Config.DB_PASSWORD,
         database=Config.DB_NAME,
         port=int(Config.DB_PORT),
