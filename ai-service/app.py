@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from config import Config
+from chatbot.routes import chatbot_bp
 import pymysql
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -9,6 +10,9 @@ import traceback
 
 app = Flask(__name__)
 CORS(app)
+
+# Register chatbot blueprint
+app.register_blueprint(chatbot_bp)
 
 # Global variables to store the model in memory
 tfidf_matrix = None
