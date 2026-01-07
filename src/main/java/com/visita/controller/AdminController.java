@@ -69,14 +69,6 @@ public class AdminController {
         return apiResponse;
     }
 
-    @org.springframework.web.bind.annotation.DeleteMapping("/users/{id}")
-    ApiResponse<String> deleteUser(@org.springframework.web.bind.annotation.PathVariable String id) {
-        ApiResponse<String> apiResponse = new ApiResponse<>();
-        userService.deleteUser(id);
-        apiResponse.setResult("User deleted successfully");
-        return apiResponse;
-    }
-
     // --- Staff Management ---
 
     @org.springframework.web.bind.annotation.PostMapping("/staffs")

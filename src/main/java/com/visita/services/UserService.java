@@ -161,15 +161,6 @@ public class UserService {
 		userRepository.save(userEntity);
 	}
 
-	@PreAuthorize("hasRole('ADMIN')")
-	public void deleteUser(String userId) {
-		UserEntity userEntity = userRepository.findById(userId)
-				.orElseThrow(() -> new WebException(ErrorCode.USER_NOT_FOUND));
-		userEntity.setIsActive(false);
-		userEntity.setUpdatedAt(LocalDateTime.now());
-		userRepository.save(userEntity);
-	}
-
 	private UserResponse mapToUserResponse(UserEntity userEntity) {
 		UserResponse userResponse = new UserResponse();
 		userResponse.setUserId(userEntity.getUserId());
