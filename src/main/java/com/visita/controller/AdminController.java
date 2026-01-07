@@ -59,15 +59,6 @@ public class AdminController {
         return apiResponse;
     }
 
-    @org.springframework.web.bind.annotation.PutMapping("/users/{id}")
-    ApiResponse<com.visita.dto.response.UserResponse> updateUser(
-            @org.springframework.web.bind.annotation.PathVariable String id,
-            @org.springframework.web.bind.annotation.RequestBody com.visita.dto.request.UserUpdateRequest userUpdateRequest) {
-        ApiResponse<com.visita.dto.response.UserResponse> apiResponse = new ApiResponse<>();
-        apiResponse.setResult(userService.updateUser(id, userUpdateRequest));
-        return apiResponse;
-    }
-
     @org.springframework.web.bind.annotation.PatchMapping("/users/{id}/status")
     ApiResponse<String> updateUserStatus(
             @org.springframework.web.bind.annotation.PathVariable String id,
