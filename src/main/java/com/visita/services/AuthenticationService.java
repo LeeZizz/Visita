@@ -152,6 +152,11 @@ public class AuthenticationService {
 				.or(() -> userRepository.findByEmail(username))
 				.orElseThrow(() -> new WebException(ErrorCode.UNAUTHENTICATED));
 
+		// Check if user is deactivated
+		if (!user.getIsActive()) {
+			throw new WebException(ErrorCode.UNAUTHENTICATED);
+		}
+
 		// 5. Generate New Tokens
 		var token = generateToken(user, 3600);
 		var refreshToken = generateToken(user, 604800);
@@ -194,6 +199,11 @@ public class AuthenticationService {
 					.build();
 			return userRepository.save(newUser);
 		});
+
+		// Check if existing user is deactivated
+		if (!user.getIsActive()) {
+			throw new WebException(ErrorCode.UNAUTHENTICATED);
+		}
 
 		var token = generateToken(user, 3600);
 		var refreshToken = generateToken(user, 604800);
