@@ -59,6 +59,15 @@ public class AdminController {
         return apiResponse;
     }
 
+    @org.springframework.web.bind.annotation.PutMapping("/users/{id}")
+    ApiResponse<com.visita.dto.response.UserResponse> updateUser(
+            @org.springframework.web.bind.annotation.PathVariable String id,
+            @org.springframework.web.bind.annotation.RequestBody com.visita.dto.request.UserUpdateRequest request) {
+        ApiResponse<com.visita.dto.response.UserResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(userService.updateUser(id, request));
+        return apiResponse;
+    }
+
     @org.springframework.web.bind.annotation.PatchMapping("/users/{id}/status")
     ApiResponse<String> updateUserStatus(
             @org.springframework.web.bind.annotation.PathVariable String id,
@@ -66,6 +75,14 @@ public class AdminController {
         userService.updateUserStatus(id, isActive);
         ApiResponse<String> apiResponse = new ApiResponse<>();
         apiResponse.setResult("User status updated successfully");
+        return apiResponse;
+    }
+
+    @org.springframework.web.bind.annotation.DeleteMapping("/users/{id}")
+    ApiResponse<String> deleteUser(@org.springframework.web.bind.annotation.PathVariable String id) {
+        userService.updateUserStatus(id, false); // Soft delete by deactivating
+        ApiResponse<String> apiResponse = new ApiResponse<>();
+        apiResponse.setResult("User deleted successfully");
         return apiResponse;
     }
 
