@@ -21,6 +21,8 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TourRequest {
 
+    private java.util.List<TourImageRequest> images;
+
     @NotBlank(message = "Title is required")
     String title;
 

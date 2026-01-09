@@ -86,10 +86,24 @@ public class BookingService {
         }
 
         // Check Availability/Capacity?
-        // Simple capacity check: Booking count vs Capacity. (Can be enhanced)
-        // For now, assuming availability = 1 means available.
-        if (tour.getAvailability() != null && tour.getAvailability() == 0) {
+        int totalGuests = request.getNumAdults() + (request.getNumChildren() != null ? request.getNumChildren() : 0);
+
+        if (tour.getAvailability() != null && tour.getAvailability() < totalGuests) {
             throw new WebException(ErrorCode.TOUR_UNAVAILABLE);
+        }
+
+        // NEW: Conflict Check (1 week gap)
+        if (tour.getStartDate() != null) {
+            java.time.LocalDate tourDate = tour.getStartDate();
+            long conflictingBookings = bookingRepository.countByUserAndStatusNotAndTour_StartDateBetween(
+                    user,
+                    BookingStatus.CANCELLED,
+                    tourDate.minusDays(5),
+                    tourDate.plusDays(5));
+
+            if (conflictingBookings > 0) {
+                throw new WebException(ErrorCode.BOOKING_CONFLICT);
+            }
         }
 
         // 3. Calculate Price
@@ -152,6 +166,7 @@ public class BookingService {
                 .totalPrice(finalPrice)
                 .status(BookingStatus.PENDING)
                 .specialRequest(request.getSpecialRequest())
+                .phone(request.getPhone())
                 .build();
 
         booking = bookingRepository.save(booking);
@@ -175,7 +190,7 @@ public class BookingService {
                     finalPrice);
             message = "Please pay via MoMo.";
         } else if (request.getPaymentMethod() == PaymentMethod.PAYPAL) {
-            String returnUrl = frontendConfig.getUrl() + "/payment/paypal-success";
+            String returnUrl = frontendConfig.getUrl() + "/payment/success";
             String cancelUrl = frontendConfig.getUrl() + "/payment/paypal-cancel";
             com.visita.dto.response.PayPalPaymentResponse payPalResponse = payPalService.createPayment(finalPrice,
                     "USD", returnUrl, cancelUrl);
@@ -236,6 +251,26 @@ public class BookingService {
             throw new WebException(ErrorCode.TOUR_NOT_FOUND);
         }
 
+        // NEW: Conflict Check (1 week gap)
+        if (tour.getStartDate() != null) {
+            java.time.LocalDate tourDate = tour.getStartDate();
+            long conflictingBookings = bookingRepository.countByUserAndStatusNotAndTour_StartDateBetween(
+                    user,
+                    BookingStatus.CANCELLED,
+                    tourDate.minusDays(7),
+                    tourDate.plusDays(7));
+
+            if (conflictingBookings > 0) {
+                throw new WebException(ErrorCode.BOOKING_CONFLICT);
+            }
+        }
+
+        // Check Availability
+        int totalGuests = request.getNumAdults() + (request.getNumChildren() != null ? request.getNumChildren() : 0);
+        if (tour.getAvailability() != null && tour.getAvailability() < totalGuests) {
+            throw new WebException(ErrorCode.TOUR_UNAVAILABLE);
+        }
+
         // 3. Calculate Price
         int adults = request.getNumAdults();
         int children = request.getNumChildren() != null ? request.getNumChildren() : 0;
@@ -293,6 +328,12 @@ public class BookingService {
                 .build();
 
         booking = bookingRepository.save(booking);
+
+        // Update Tour Availability
+        if (tour.getAvailability() != null) {
+            tour.setAvailability(tour.getAvailability() - totalGuests);
+            tourRepository.save(tour);
+        }
 
         // 6. Create Payment (Method CASH, Status PENDING)
         PaymentEntity payment = PaymentEntity.builder()
@@ -368,11 +409,55 @@ public class BookingService {
                 recalculatePrice(booking);
             }
 
-            if (request.getStatus() != null) {
-                try {
-                    booking.setStatus(BookingStatus.valueOf(request.getStatus().toUpperCase()));
-                } catch (IllegalArgumentException e) {
+        }
+
+        if (request.getStatus() != null) {
+            try {
+                BookingStatus newStatus = BookingStatus.valueOf(request.getStatus().toUpperCase());
+
+                // Add validation logic similar to updateStatus method
+                if (newStatus == BookingStatus.COMPLETED) {
+                    if (payment == null || payment.getStatus() != PaymentStatus.SUCCESS) {
+                        if (payment != null && payment.getPaymentMethod().equals("CASH")
+                                && payment.getStatus() != PaymentStatus.SUCCESS) {
+                            payment.setStatus(PaymentStatus.SUCCESS);
+                            paymentRepository.save(payment);
+                        } else if (payment != null && payment.getStatus() != PaymentStatus.SUCCESS) {
+                            throw new WebException(ErrorCode.PAYMENT_REQUIRED);
+                        }
+                    }
                 }
+
+                // Handle Availability Update on Status Change
+                BookingStatus oldStatus = booking.getStatus();
+                if (oldStatus != newStatus) {
+                    int guests = (booking.getNumAdults() != null ? booking.getNumAdults() : 0) +
+                            (booking.getNumChildren() != null ? booking.getNumChildren() : 0);
+                    TourEntity tour = booking.getTour();
+
+                    // CONFIRMED/COMPLETED -> CANCELLED/PENDING: Increase Availability
+                    if ((oldStatus == BookingStatus.CONFIRMED || oldStatus == BookingStatus.COMPLETED) &&
+                            (newStatus == BookingStatus.CANCELLED || newStatus == BookingStatus.PENDING)) {
+                        if (tour.getAvailability() != null) {
+                            tour.setAvailability(tour.getAvailability() + guests);
+                            tourRepository.save(tour);
+                        }
+                    }
+                    // PENDING/CANCELLED -> CONFIRMED/COMPLETED: Decrease Availability
+                    else if ((oldStatus == BookingStatus.PENDING || oldStatus == BookingStatus.CANCELLED) &&
+                            (newStatus == BookingStatus.CONFIRMED || newStatus == BookingStatus.COMPLETED)) {
+                        if (tour.getAvailability() != null) {
+                            if (tour.getAvailability() < guests) {
+                                throw new WebException(ErrorCode.TOUR_UNAVAILABLE);
+                            }
+                            tour.setAvailability(tour.getAvailability() - guests);
+                            tourRepository.save(tour);
+                        }
+                    }
+                }
+
+                booking.setStatus(newStatus);
+            } catch (IllegalArgumentException e) {
             }
         }
 
@@ -397,6 +482,34 @@ public class BookingService {
                     : null;
             if (payment == null || payment.getStatus() != PaymentStatus.SUCCESS) {
                 throw new RuntimeException("Cannot change to COMPLETED: Payment is not SUCCESS.");
+            }
+        }
+
+        // Handle Availability Update on Status Change
+        BookingStatus oldStatus = booking.getStatus();
+        if (oldStatus != newStatus) {
+            int guests = (booking.getNumAdults() != null ? booking.getNumAdults() : 0) +
+                    (booking.getNumChildren() != null ? booking.getNumChildren() : 0);
+            TourEntity tour = booking.getTour();
+
+            // CONFIRMED/COMPLETED -> CANCELLED/PENDING: Increase Availability
+            if ((oldStatus == BookingStatus.CONFIRMED || oldStatus == BookingStatus.COMPLETED) &&
+                    (newStatus == BookingStatus.CANCELLED || newStatus == BookingStatus.PENDING)) {
+                if (tour.getAvailability() != null) {
+                    tour.setAvailability(tour.getAvailability() + guests);
+                    tourRepository.save(tour);
+                }
+            }
+            // PENDING/CANCELLED -> CONFIRMED/COMPLETED: Decrease Availability
+            else if ((oldStatus == BookingStatus.PENDING || oldStatus == BookingStatus.CANCELLED) &&
+                    (newStatus == BookingStatus.CONFIRMED || newStatus == BookingStatus.COMPLETED)) {
+                if (tour.getAvailability() != null) {
+                    if (tour.getAvailability() < guests) {
+                        throw new WebException(ErrorCode.TOUR_UNAVAILABLE);
+                    }
+                    tour.setAvailability(tour.getAvailability() - guests);
+                    tourRepository.save(tour);
+                }
             }
         }
 
@@ -449,7 +562,8 @@ public class BookingService {
                 .userId(booking.getUser() != null ? booking.getUser().getUserId() : null)
                 .userName(booking.getUser() != null ? booking.getUser().getFullName() : null)
                 .userEmail(booking.getUser() != null ? booking.getUser().getEmail() : null)
-                .userPhone(booking.getUser() != null ? booking.getUser().getPhone() : null)
+                .userPhone(booking.getPhone() != null ? booking.getPhone()
+                        : (booking.getUser() != null ? booking.getUser().getPhone() : null))
                 .tourId(booking.getTour() != null ? booking.getTour().getTourId() : null)
                 .tourTitle(booking.getTour() != null ? booking.getTour().getTitle() : null)
                 .startDate(booking.getTour() != null && booking.getTour().getStartDate() != null

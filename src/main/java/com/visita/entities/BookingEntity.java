@@ -59,6 +59,9 @@ public class BookingEntity {
 	@Column(name = "booking_date")
 	private LocalDateTime bookingDate;
 
+	@Column(name = "phone", length = 20)
+	private String phone;
+
 	@Column(name = "num_adults", nullable = false)
 	private Integer numAdults;
 

@@ -26,6 +26,10 @@ public interface BookingRepository extends JpaRepository<BookingEntity, String> 
 
         long countByBookingDateBetween(java.time.LocalDateTime startDate, java.time.LocalDateTime endDate);
 
+        long countByUserAndStatusNotAndTour_StartDateBetween(com.visita.entities.UserEntity user,
+                        com.visita.entities.BookingStatus status, java.time.LocalDate startDate,
+                        java.time.LocalDate endDate);
+
         org.springframework.data.domain.Page<BookingEntity> findByStaff_UserId(String staffId,
                         org.springframework.data.domain.Pageable pageable);
 }

@@ -32,7 +32,7 @@ public class TourImageEntity {
 	@com.fasterxml.jackson.annotation.JsonBackReference("tour-images")
 	private TourEntity tour;
 
-	@Column(name = "image_url", nullable = false, length = 500)
+	@Column(name = "image_url", nullable = false, columnDefinition = "LONGTEXT")
 	private String imageUrl;
 
 	@Column

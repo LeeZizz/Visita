@@ -33,4 +33,7 @@ public class BookingRequest {
     String specialRequest;
 
     String promotionCode;
+
+    @NotBlank(message = "PHONE_REQUIRED")
+    String phone;
 }

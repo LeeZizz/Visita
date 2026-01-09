@@ -42,8 +42,19 @@ public class TourService {
                 .capacity(request.getCapacity())
                 .category(request.getCategory())
                 .region(request.getRegion())
-                .availability(request.getAvailability() != null ? request.getAvailability() : 1)
+                .availability(request.getAvailability() != null ? request.getAvailability() : request.getCapacity())
                 .build();
+
+        if (request.getImages() != null && !request.getImages().isEmpty()) {
+            java.util.List<com.visita.entities.TourImageEntity> images = request.getImages().stream()
+                    .map(imgReq -> com.visita.entities.TourImageEntity.builder()
+                            .tour(tour)
+                            .imageUrl(imgReq.getImageUrl())
+                            .description(imgReq.getDescription())
+                            .build())
+                    .collect(java.util.stream.Collectors.toList());
+            tour.setImages(images);
+        }
 
         return tourRepository.save(tour);
     }

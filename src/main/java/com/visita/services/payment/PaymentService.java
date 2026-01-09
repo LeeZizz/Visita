@@ -22,6 +22,7 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final BookingRepository bookingRepository; // Need this to update booking status
+    private final com.visita.repositories.TourRepository tourRepository;
     private final PayPalService payPalService;
     private final MoMoService moMoService;
 
@@ -39,6 +40,20 @@ public class PaymentService {
         payment.setStatus(PaymentStatus.SUCCESS);
         payment.setPaymentDate(java.time.LocalDateTime.now());
         paymentRepository.save(payment);
+
+        // Update booking status
+        com.visita.entities.BookingEntity booking = payment.getBooking();
+        booking.setStatus(com.visita.entities.BookingStatus.CONFIRMED);
+        bookingRepository.save(booking);
+
+        // Update Tour Availability (Pending -> Confirmed)
+        com.visita.entities.TourEntity tour = booking.getTour();
+        if (tour.getAvailability() != null) {
+            int totalGuests = (booking.getNumAdults() != null ? booking.getNumAdults() : 0) +
+                    (booking.getNumChildren() != null ? booking.getNumChildren() : 0);
+            tour.setAvailability(tour.getAvailability() - totalGuests);
+            tourRepository.save(tour);
+        }
 
         return com.visita.dto.response.PayPalPaymentResponse.builder().status("COMPLETED").build();
     }
@@ -89,10 +104,18 @@ public class PaymentService {
         paymentRepository.save(payment);
 
         // 6. Update Booking
-        // booking.setStatus(BookingStatus.CONFIRMED);
-        // User requested to keep Booking Status as PENDING even after payment success.
-        // So we only update Payment Status.
-        // bookingRepository.save(booking);
+        com.visita.entities.BookingEntity booking = payment.getBooking();
+        booking.setStatus(com.visita.entities.BookingStatus.CONFIRMED);
+        bookingRepository.save(booking);
+
+        // Update Tour Availability (Pending -> Confirmed)
+        com.visita.entities.TourEntity tour = booking.getTour();
+        if (tour.getAvailability() != null) {
+            int totalGuests = (booking.getNumAdults() != null ? booking.getNumAdults() : 0) +
+                    (booking.getNumChildren() != null ? booking.getNumChildren() : 0);
+            tour.setAvailability(tour.getAvailability() - totalGuests);
+            tourRepository.save(tour);
+        }
 
         log.info("Payment successful for Booking: {}, TransactionID: {}", finalBookingId, request.getTransId());
     }
