@@ -69,7 +69,7 @@ public class DataInitializer implements CommandLineRunner {
         createUserIfNotExists(
                 "admin@visita.com",
                 "admin",
-                "admin123",
+                "admin12345",
                 "System Administrator",
                 "ADMIN");
 
@@ -77,7 +77,7 @@ public class DataInitializer implements CommandLineRunner {
         createUserIfNotExists(
                 "staff@visita.com",
                 "staff",
-                "staff123",
+                "staff12345",
                 "Staff Member",
                 "STAFF");
 
@@ -85,7 +85,7 @@ public class DataInitializer implements CommandLineRunner {
         createUserIfNotExists(
                 "user@visita.com",
                 null,
-                "user123",
+                "user12345",
                 "Test User",
                 "USER");
     }
