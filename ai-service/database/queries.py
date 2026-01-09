@@ -160,105 +160,6 @@ def get_tour_details(tour_id):
         return None
 
 
-def get_booking_by_id(booking_id):
-    """Get booking details by ID with full backend fields."""
-    try:
-        conn = get_db_connection()
-        with conn.cursor() as cursor:
-            query = """
-                SELECT b.booking_id, b.booking_date, b.num_adults, b.num_children,
-                       b.total_price, b.status, b.special_request, b.phone,
-                       t.title as tour_title, t.destination, t.start_date, t.end_date,
-                       t.duration, t.price_adult, t.price_child,
-                       u.full_name, u.email,
-                       p.code as promotion_code, p.discount_percent, p.discount_amount
-                FROM bookings b
-                JOIN tours t ON b.tour_id = t.tour_id
-                JOIN users u ON b.user_id = u.user_id
-                LEFT JOIN promotions p ON b.promotion_id = p.promotion_id
-                WHERE b.booking_id = %s
-            """
-            cursor.execute(query, (booking_id,))
-            booking = cursor.fetchone()
-        conn.close()
-        
-        if booking:
-            return format_booking_for_display(booking)
-        return None
-    except Exception as e:
-        print(f"Error getting booking: {e}")
-        return None
-
-
-def get_bookings_by_email(email, limit=5):
-    """Get bookings by user email with full details."""
-    try:
-        conn = get_db_connection()
-        with conn.cursor() as cursor:
-            query = """
-                SELECT b.booking_id, b.booking_date, b.num_adults, b.num_children,
-                       b.total_price, b.status, b.special_request, b.phone,
-                       t.title as tour_title, t.destination, t.start_date, t.end_date,
-                       t.duration,
-                       u.full_name, u.email,
-                       p.code as promotion_code, p.discount_percent
-                FROM bookings b
-                JOIN tours t ON b.tour_id = t.tour_id
-                JOIN users u ON b.user_id = u.user_id
-                LEFT JOIN promotions p ON b.promotion_id = p.promotion_id
-                WHERE u.email = %s
-                ORDER BY b.booking_date DESC
-                LIMIT %s
-            """
-            cursor.execute(query, (email, limit))
-            bookings = cursor.fetchall()
-        conn.close()
-        
-        if bookings:
-            return format_bookings_list_for_display(bookings)
-        return None
-    except Exception as e:
-        print(f"Error getting bookings by email: {e}")
-        return None
-
-
-def get_bookings_by_phone(phone, limit=5):
-    """Get bookings by user phone number."""
-    try:
-        # Normalize phone number (remove spaces, dashes)
-        phone_clean = phone.replace(" ", "").replace("-", "").replace(".", "")
-        
-        conn = get_db_connection()
-        with conn.cursor() as cursor:
-            query = """
-                SELECT b.booking_id, b.booking_date, b.num_adults, b.num_children,
-                       b.total_price, b.status, b.special_request, b.phone,
-                       t.title as tour_title, t.destination, t.start_date, t.end_date,
-                       t.duration,
-                       u.full_name, u.phone as user_phone,
-                       p.code as promotion_code, p.discount_percent
-                FROM bookings b
-                JOIN tours t ON b.tour_id = t.tour_id
-                JOIN users u ON b.user_id = u.user_id
-                LEFT JOIN promotions p ON b.promotion_id = p.promotion_id
-                WHERE REPLACE(REPLACE(u.phone, ' ', ''), '-', '') LIKE %s
-                   OR REPLACE(REPLACE(b.phone, ' ', ''), '-', '') LIKE %s
-                ORDER BY b.booking_date DESC
-                LIMIT %s
-            """
-            phone_pattern = f"%{phone_clean[-9:]}%"
-            cursor.execute(query, (phone_pattern, phone_pattern, limit))
-            bookings = cursor.fetchall()
-        conn.close()
-        
-        if bookings:
-            return format_bookings_list_for_display(bookings)
-        return None
-    except Exception as e:
-        print(f"Error getting bookings by phone: {e}")
-        return None
-
-
 def format_tours_for_display(tours):
     """Format tours data for AI context with full details."""
     if not tours:
@@ -271,13 +172,16 @@ def format_tours_for_display(tours):
     }
     
     category_map = {
-        'ADVENTURE': 'Phiêu lưu',
-        'CULTURAL': 'Văn hóa',
-        'BEACH': 'Biển',
-        'MOUNTAIN': 'Núi',
+        'BEACH': 'Biển đảo',
         'CITY': 'Thành phố',
-        'ECOTOURISM': 'Sinh thái',
+        'CULTURE': 'Văn hóa',
+        'CULTURAL': 'Văn hóa',
+        'EXPLORATION': 'Phiêu lưu',
+        'ADVENTURE': 'Mạo hiểm',
+        'NATURE': 'Thiên nhiên',
         'FOOD': 'Ẩm thực',
+        'MOUNTAIN': 'Núi',
+        'ECOTOURISM': 'Sinh thái',
         'FAMILY': 'Gia đình'
     }
     
@@ -323,13 +227,16 @@ def format_tour_detail_for_display(tour):
     }
     
     category_map = {
-        'ADVENTURE': 'Phiêu lưu',
-        'CULTURAL': 'Văn hóa',
-        'BEACH': 'Biển',
-        'MOUNTAIN': 'Núi',
+        'BEACH': 'Biển đảo',
         'CITY': 'Thành phố',
-        'ECOTOURISM': 'Sinh thái',
+        'CULTURE': 'Văn hóa',
+        'CULTURAL': 'Văn hóa',
+        'EXPLORATION': 'Phiêu lưu',
+        'ADVENTURE': 'Mạo hiểm',
+        'NATURE': 'Thiên nhiên',
         'FOOD': 'Ẩm thực',
+        'MOUNTAIN': 'Núi',
+        'ECOTOURISM': 'Sinh thái',
         'FAMILY': 'Gia đình'
     }
     
@@ -364,104 +271,3 @@ def format_tour_detail_for_display(tour):
         result += f"\n📋 Lịch trình:\n{tour['itinerary'][:800]}{'...' if len(tour.get('itinerary', '')) > 800 else ''}\n"
     
     return result
-
-
-def format_booking_for_display(booking):
-    """Format booking data for AI context with full details."""
-    status_map = {
-        'PENDING': 'Chờ xác nhận',
-        'CONFIRMED': 'Đã xác nhận',
-        'CANCELLED': 'Đã hủy',
-        'COMPLETED': 'Hoàn thành'
-    }
-    
-    status = status_map.get(booking['status'], booking['status'])
-    total = f"{booking['total_price']:,.0f}₫" if booking['total_price'] else "N/A"
-    
-    # Calculate original price
-    num_adults = booking.get('num_adults', 0) or 0
-    num_children = booking.get('num_children', 0) or 0
-    price_adult = booking.get('price_adult', 0) or 0
-    price_child = booking.get('price_child', 0) or 0
-    original_price = (num_adults * price_adult) + (num_children * price_child)
-    
-    result = (
-        f"📋 CHI TIẾT ĐẶT TOUR\n"
-        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"🔖 Mã booking: {booking['booking_id']}\n"
-        f"🎯 Tour: {booking['tour_title']}\n"
-        f"📍 Điểm đến: {booking['destination']}\n"
-        f"📅 Lịch trình: {booking['start_date']} → {booking['end_date']}\n"
-        f"⏱️ Thời gian: {booking.get('duration', 'N/A')}\n"
-        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"👤 Khách hàng: {booking.get('full_name', 'N/A')}\n"
-        f"📧 Email: {booking.get('email', 'N/A')}\n"
-        f"📱 SĐT: {booking.get('phone', 'N/A')}\n"
-        f"👥 Số khách: {num_adults} người lớn, {num_children} trẻ em\n"
-        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"📆 Ngày đặt: {booking['booking_date']}\n"
-    )
-    
-    # Show pricing breakdown
-    if original_price > 0:
-        result += f"💵 Giá gốc: {original_price:,.0f}₫\n"
-    
-    # Show promotion if applied
-    if booking.get('promotion_code'):
-        discount_info = ""
-        if booking.get('discount_percent'):
-            discount_info = f" (-{booking['discount_percent']}%)"
-        elif booking.get('discount_amount'):
-            discount_info = f" (-{booking['discount_amount']:,.0f}₫)"
-        result += f"🎁 Mã giảm giá: {booking['promotion_code']}{discount_info}\n"
-    
-    result += (
-        f"💰 Tổng thanh toán: {total}\n"
-        f"📊 Trạng thái: {status}\n"
-    )
-    
-    if booking.get('special_request'):
-        result += f"📝 Yêu cầu đặc biệt: {booking['special_request']}\n"
-    
-    return result
-
-
-def format_bookings_list_for_display(bookings):
-    """Format multiple bookings for AI context with full details."""
-    status_map = {
-        'PENDING': 'Chờ xác nhận',
-        'CONFIRMED': 'Đã xác nhận',
-        'CANCELLED': 'Đã hủy',
-        'COMPLETED': 'Hoàn thành'
-    }
-    
-    if not bookings:
-        return "Không tìm thấy đơn đặt tour nào."
-    
-    user_name = bookings[0].get('full_name', 'Khách hàng')
-    lines = [f"📋 DANH SÁCH ĐẶT TOUR CỦA {user_name.upper()}\n{'━' * 35}\n"]
-    
-    for b in bookings:
-        status = status_map.get(b['status'], b['status'])
-        total = f"{b['total_price']:,.0f}₫" if b['total_price'] else "N/A"
-        num_adults = b.get('num_adults', 0) or 0
-        num_children = b.get('num_children', 0) or 0
-        
-        promo_text = ""
-        if b.get('promotion_code'):
-            promo_text = f" 🎁 {b['promotion_code']}"
-            if b.get('discount_percent'):
-                promo_text += f" (-{b['discount_percent']}%)"
-        
-        lines.append(
-            f"🎯 {b['tour_title']}\n"
-            f"   📍 {b['destination']} | ⏱️ {b.get('duration', 'N/A')}\n"
-            f"   🔖 Mã: {b['booking_id'][:8]}...\n"
-            f"   📅 Ngày đặt: {b['booking_date']}\n"
-            f"   📆 Khởi hành: {b['start_date']} → {b['end_date']}\n"
-            f"   👥 {num_adults} người lớn, {num_children} trẻ em\n"
-            f"   💰 {total}{promo_text}\n"
-            f"   📊 Trạng thái: {status}\n"
-        )
-    
-    return "\n".join(lines)

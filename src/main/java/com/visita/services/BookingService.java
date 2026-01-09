@@ -417,14 +417,10 @@ public class BookingService {
 
                 // Add validation logic similar to updateStatus method
                 if (newStatus == BookingStatus.COMPLETED) {
-                    if (payment == null || payment.getStatus() != PaymentStatus.SUCCESS) {
-                        if (payment != null && payment.getPaymentMethod().equals("CASH")
-                                && payment.getStatus() != PaymentStatus.SUCCESS) {
-                            payment.setStatus(PaymentStatus.SUCCESS);
-                            paymentRepository.save(payment);
-                        } else if (payment != null && payment.getStatus() != PaymentStatus.SUCCESS) {
-                            throw new WebException(ErrorCode.PAYMENT_REQUIRED);
-                        }
+                    if (payment != null && payment.getStatus() != PaymentStatus.SUCCESS) {
+                        // Admin manual override: Set payment to SUCCESS
+                        payment.setStatus(PaymentStatus.SUCCESS);
+                        paymentRepository.save(payment);
                     }
                 }
 
@@ -480,8 +476,10 @@ public class BookingService {
             PaymentEntity payment = booking.getPayments() != null && !booking.getPayments().isEmpty()
                     ? booking.getPayments().get(0)
                     : null;
-            if (payment == null || payment.getStatus() != PaymentStatus.SUCCESS) {
-                throw new RuntimeException("Cannot change to COMPLETED: Payment is not SUCCESS.");
+            if (payment != null && payment.getStatus() != PaymentStatus.SUCCESS) {
+                // Admin manual override
+                payment.setStatus(PaymentStatus.SUCCESS);
+                paymentRepository.save(payment);
             }
         }
 
@@ -588,14 +586,32 @@ public class BookingService {
     private BigDecimal calculateDiscount(BookingEntity booking) {
         if (booking.getPromotion() == null)
             return BigDecimal.ZERO;
-        // Simple logic for display, re-calculation from original not stored directly
-        // But we have totalPrice = original - discount.
-        // We can't perfectly reconstruct without original price stored,
-        // but for now let's just return 0 or try to calc if original price is needed.
-        // Actually BookingResponse has originalPrice, but Entity doesn't store it
-        // explicitly ONLY totalPrice.
-        // So we might skip discountAmount in DetailResponse for now or Estimate it.
         return BigDecimal.ZERO;
+    }
+
+    @Transactional
+    public void cancelBooking(String bookingId) {
+        // 1. Get current user
+        com.visita.entities.UserEntity user = getCurrentUser();
+
+        // 2. Find booking
+        BookingEntity booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new WebException(ErrorCode.BOOKING_NOT_FOUND));
+
+        // 3. Verify ownership
+        if (!booking.getUser().getUserId().equals(user.getUserId())) {
+            // Or throw specific ACCESS_DENIED error if preferred
+            throw new WebException(ErrorCode.BOOKING_NOT_FOUND);
+        }
+
+        // 4. Verify Status is PENDING
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new WebException(ErrorCode.INVALID_BOOKING_STATUS);
+        }
+
+        // 5. Update Status to CANCELLED
+        booking.setStatus(BookingStatus.CANCELLED);
+        bookingRepository.save(booking);
     }
 
     // --- User History Methods ---

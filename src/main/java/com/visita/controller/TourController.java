@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.visita.dto.response.ApiResponse;
-import com.visita.entities.TourEntity;
 import com.visita.services.TourService;
 
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,7 @@ public class TourController {
     private final TourService tourService;
 
     @GetMapping
-    public ApiResponse<org.springframework.data.domain.Page<TourEntity>> getAllActiveTours(
+    public ApiResponse<org.springframework.data.domain.Page<com.visita.dto.response.TourResponse>> getAllActiveTours(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(required = false) String title,
@@ -39,18 +38,19 @@ public class TourController {
             @RequestParam(required = false) Integer numChildren,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String sortDirection) {
-        ApiResponse<org.springframework.data.domain.Page<TourEntity>> apiResponse = new ApiResponse<>();
+        ApiResponse<org.springframework.data.domain.Page<com.visita.dto.response.TourResponse>> apiResponse = new ApiResponse<>();
         apiResponse.setResult(
                 tourService.getAllActiveTours(page - 1, size, title, destination, category, region, minPrice, maxPrice,
                         startDateFrom,
-                        endDateTo, endDateLimit, minRating, numAdults, numChildren, sortBy, sortDirection));
+                        endDateTo, endDateLimit, minRating, numAdults, numChildren, sortBy, sortDirection)
+                        .map(tourService::mapToTourResponse));
         return apiResponse;
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<TourEntity> getTourById(@PathVariable String id) {
-        ApiResponse<TourEntity> apiResponse = new ApiResponse<>();
-        apiResponse.setResult(tourService.getTourById(id));
+    public ApiResponse<com.visita.dto.response.TourResponse> getTourById(@PathVariable String id) {
+        ApiResponse<com.visita.dto.response.TourResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(tourService.mapToTourResponse(tourService.getTourById(id)));
         return apiResponse;
     }
 }

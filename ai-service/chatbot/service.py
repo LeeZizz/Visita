@@ -6,10 +6,7 @@ import re
 from google import genai
 from config import Config
 from chatbot.prompts import SYSTEM_PROMPT, build_context_prompt
-from database.queries import (
-    get_tours_summary, search_tours, get_tour_details, get_booking_by_id,
-    get_bookings_by_email, get_bookings_by_phone
-)
+from database.queries import get_tours_summary, search_tours, get_tour_details
 
 
 # Initialize Gemini client
@@ -78,37 +75,19 @@ def detect_intent(message):
     """
     Enhanced intent detection with full backend filter support.
     Returns tuple: (intent, extracted_params)
+    
+    NOTE: Booking lookups have been removed for security reasons.
+    Users should check their bookings via the authenticated profile page.
     """
     message_lower = message.lower()
     params = {}
     
-    # 1. Email lookup (Highest priority if email is present)
-    email_match = re.search(r'[\w\.-]+@[\w\.-]+\.\w+', message)
-    if email_match:
-        email = email_match.group()
-        return ('booking_lookup_by_email', {'email': email})
-
-    # 2. Phone lookup
-    phone_match = re.search(r'(0[3|5|7|8|9])+([0-9]{8})\b', message)
-    if not phone_match:
-        phone_match = re.search(r'\b\d{10}\b', message)
-         
-    if phone_match:
-        phone = phone_match.group()
-        return ('booking_lookup_by_phone', {'phone': phone})
-
-    # 3. Booking ID lookup (UUID)
-    uuid_match = re.search(r'[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}', message, re.IGNORECASE)
-    if uuid_match:
-        booking_id = uuid_match.group()
-        return ('booking_lookup', {'booking_id': booking_id})
-    
-    # 4. Tour detail lookup (asking about specific tour)
+    # Tour detail lookup (asking about specific tour)
     if any(kw in message_lower for kw in ['chi tiết tour', 'lịch trình tour', 'thông tin tour', 'mô tả tour']):
         # Try to extract tour name or ID
         return ('tour_detail', params)
     
-    # 5. Tour search with filters
+    # Tour search with filters
     # Check for region
     regions = {
         'miền bắc': 'NORTH', 'bắc': 'NORTH',
@@ -170,7 +149,7 @@ def detect_intent(message):
     if params:
         return ('tour_search', params)
     
-    # 6. General tour listing
+    # General tour listing
     if any(kw in message_lower for kw in ['tour', 'du lịch', 'chuyến đi', 'điểm đến', 'xem tour', 'có tour', 'gợi ý']):
         return ('tour_list', {})
     
@@ -201,21 +180,6 @@ def get_context_data(intent, params):
         if tour_id:
             return {'tours_data': get_tour_details(tour_id)}
         return {'tours_data': get_tours_summary(limit=3)}
-    
-    elif intent == 'booking_lookup':
-        booking_id = params.get('booking_id')
-        if booking_id:
-            return {'booking_data': get_booking_by_id(booking_id)}
-    
-    elif intent == 'booking_lookup_by_email':
-        email = params.get('email')
-        if email:
-            return {'booking_data': get_bookings_by_email(email)}
-            
-    elif intent == 'booking_lookup_by_phone':
-        phone = params.get('phone')
-        if phone:
-            return {'booking_data': get_bookings_by_phone(phone)}
     
     return None
 

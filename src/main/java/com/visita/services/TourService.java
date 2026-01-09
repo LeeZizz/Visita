@@ -178,7 +178,7 @@ public class TourService {
         return tourRepository.findByStaff_UserId(staffId, pageable).map(this::mapToTourResponse);
     }
 
-    private com.visita.dto.response.TourResponse mapToTourResponse(TourEntity tour) {
+    public com.visita.dto.response.TourResponse mapToTourResponse(TourEntity tour) {
         List<String> imageUrls = tour.getImages() != null
                 ? tour.getImages().stream().map(com.visita.entities.TourImageEntity::getImageUrl)
                         .collect(java.util.stream.Collectors.toList())

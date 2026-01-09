@@ -40,7 +40,9 @@ public enum ErrorCode {
 	CONCURRENT_UPDATE(1020, "Data was modified by another user. Please try again.", HttpStatus.CONFLICT),
 	BOOKING_NOT_FOUND(1021, "Booking not found", HttpStatus.NOT_FOUND),
 	PAYMENT_REQUIRED(1022, "Payment is required before completing booking", HttpStatus.BAD_REQUEST),
-	BOOKING_CONFLICT(1023, "Cannot book tours within 1 week of another tour", HttpStatus.CONFLICT);
+	BOOKING_CONFLICT(1023, "Cannot book tours within 1 week of another tour", HttpStatus.CONFLICT),
+	INVALID_BOOKING_STATUS(1024, "Không thể hủy đặt tour, hãy liên hệ với nhân viên để được giải quyết",
+			HttpStatus.BAD_REQUEST);
 
 	private final int code;
 	private final String message;

@@ -27,6 +27,14 @@ public class BookingController {
         return apiResponse;
     }
 
+    @org.springframework.web.bind.annotation.PutMapping("/{id}/cancel")
+    public ApiResponse<Void> cancelBooking(@org.springframework.web.bind.annotation.PathVariable String id) {
+        bookingService.cancelBooking(id);
+        ApiResponse<Void> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("Booking cancelled successfully");
+        return apiResponse;
+    }
+
     @org.springframework.web.bind.annotation.GetMapping("/active")
     public ApiResponse<org.springframework.data.domain.Page<com.visita.dto.response.BookingDetailResponse>> getActiveBookings(
             @org.springframework.web.bind.annotation.RequestParam(defaultValue = "1") int page,

@@ -34,4 +34,5 @@ public class TourResponse {
     private Long reviewCount;
     private String staffId;
     private String staffName;
+    private List<ReviewResponse> reviews;
 }

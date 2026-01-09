@@ -8,6 +8,7 @@ create table if not exists bookings
 	booking_date datetime(6) null,
 	num_adults int not null,
 	num_children int null,
+	phone varchar(20) null,
 	special_request varchar(500) null,
 	status enum('PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED') null,
 	total_price decimal(15,3) not null,
@@ -169,9 +170,9 @@ create table if not exists reviews
 	created_at datetime(6) null,
 	is_visible bit null,
 	rating int null,
+	booking_id varchar(255) null,
 	tour_id varchar(255) null,
-	user_id varchar(255) null,
-	booking_id varchar(255) null
+	user_id varchar(255) null
 );
 
 alter table reviews
@@ -184,6 +185,9 @@ alter table reviews
 alter table reviews
 	add constraint FK28an517hrxtt2bsg93uefugrm
 		foreign key (booking_id) references bookings (booking_id);
+
+alter table reviews
+	add check ((`rating` >= 1) and (`rating` <= 5));
 
 create table if not exists roles
 (
@@ -198,7 +202,7 @@ create table if not exists tour_images
 (
 	image_id varchar(255) not null,
 	description varchar(255) null,
-	image_url varchar(500) not null,
+	image_url longtext not null,
 	tour_id varchar(255) null
 );
 
@@ -222,8 +226,8 @@ create table if not exists tours
 	region enum('CENTRAL', 'NORTH', 'SOUTH') null,
 	start_date date null,
 	title varchar(255) not null,
-	staff_id varchar(255) null,
-	version bigint null
+	version bigint null,
+	staff_id varchar(255) null
 );
 
 alter table tours
